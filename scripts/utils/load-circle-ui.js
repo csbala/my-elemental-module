@@ -1,8 +1,10 @@
-export function createTriangleNodes(container) {
+export function createTriangleNodes(container, nodeCount = 3) {
     const centerX = 200;
     const centerY = 200;
     const radius = 180;
-    const nodeCount = 4;
+  
+    // Remove existing nodes
+    container.querySelectorAll('.circle:not(.center)').forEach(node => node.remove());
   
     for (let i = 0; i < nodeCount; i++) {
       const angleDeg = 90 + (360 / nodeCount) * i;

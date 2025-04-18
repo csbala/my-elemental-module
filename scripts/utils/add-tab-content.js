@@ -1,4 +1,4 @@
-import { createTriangleNodes } from './create-triangle-nodes.js';
+import { createTriangleNodes } from './load-circle-ui.js';
 
 export async function addTabContent(tabBody) {
   if (!tabBody.find('.tab[data-tab="elements"]').length) {
@@ -13,7 +13,17 @@ export async function addTabContent(tabBody) {
     tabBody.append(tabContent);
     console.log("✅ Tab content added to .tab-body");
 
-    const container = tabBody[0].querySelector('.elemental-circle-container');
-    createTriangleNodes(container);
+    // Now dynamically generate the nodes based on input
+    const mainCircle = tabContent[0].querySelector('.elemental-circle-container');
+    const input = tabContent[0].querySelector('#nodeCountInput');
+    const button = tabContent[0].querySelector('#updateNodesButton');
+
+    // Initial render
+    createTriangleNodes(mainCircle, parseInt(input.value));
+
+    button.addEventListener('click', () => {
+      const count = parseInt(input.value);
+      createTriangleNodes(mainCircle, count);
+    });
   }
 }
