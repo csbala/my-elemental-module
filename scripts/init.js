@@ -4,14 +4,20 @@ Hooks.once("init", async function () {
   
   // Add the tab when the character sheet renders
   Hooks.on("renderActorSheet5eCharacter", (app, html, data) => {
-    const tabButton = $(`<a class="item" data-tab="elements"><i class="fas fa-bolt"></i> Elements</a>`);
-    const sheetTabs = html.find(".tabs[data-group='primary']");
-    sheetTabs.append(tabButton);
+    const tabs = html.find('.tabs[data-group="primary"]');
+    const body = html.find('.sheet-body');
   
-    // Load custom tab template
-    const content = $(`<div class="tab" data-tab="elements">${getElementTabContent(data)}</div>`);
-    html.find(".sheet-body").append(content);
+    // Add new tab button
+    const tabButton = $(`<a class="item" data-tab="elements"><i class="fas fa-bolt"></i> Elements</a>`);
+    tabs.append(tabButton);
+  
+    // Load the HTML template
+    renderTemplate("modules/my-elemental-module/templates/elements-tab.html", data).then((content) => {
+      const tabContent = $(`<div class="tab" data-tab="elements">${content}</div>`);
+      body.append(tabContent);
+    });
   });
+  
   
   function getElementTabContent(data) {
     return `
