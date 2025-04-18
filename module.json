@@ -1,18 +1,16 @@
 {
-    "name": "my-elemental-module",
-    "title": "Elemental Attribute System",
-    "description": "Adds a custom Elements tab to character sheets for narrative powers.",
-    "author": "Balázs Cservenák",
-    "version": "1.0.0",
-    "minimumCoreVersion": "12",
-    "compatibleCoreVersion": "12",
-    "system": "dnd5e",
-    "scripts": ["scripts/init.js"],
-    "styles": ["styles/sheet.css"],
-    "esmodules": [],
-    "languages": [],
-    "url": "https://github.com/csbala/my-elemental-module",
-    "manifest": "https://raw.githubusercontent.com/csbala/my-elemental-module/main/module.json",
-    "download": "https://github.com/csbala/my-elemental-module/archive/refs/heads/main.zip"
-  }
-  
+  "name": "my-elemental-module",
+  "title": "Elemental Attribute System",
+  "description": "Adds a custom Elements tab to character sheets for narrative powers.",
+  "author": "Balázs Cservenák",
+  "version": "1.0.0",
+  "minimumCoreVersion": "12",
+  "compatibleCoreVersion": "12",
+  "system": "dnd5e",
+  "esmodules": ["scripts/init.js"],
+  "styles": ["styles/sheet.css"],
+  "languages": [],
+  "url": "https://github.com/csbala/my-elemental-module",
+  "manifest": "https://raw.githubusercontent.com/csbala/my-elemental-module/main/module.json",
+  "download": "https://github.com/csbala/my-elemental-module/archive/refs/heads/main.zip"
+}
