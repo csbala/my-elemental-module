@@ -1,11 +1,7 @@
-.elements-tab {
-    padding: 1em;
-    background: rgba(255,255,255,0.03);
-    border-radius: 5px;
-    color: #ddd;
-  }
-  
-  .elements-tab h2 {
-    color: #ffc600;
-  }
-  
+.elements-tab-inner {
+  padding: 1em;
+  color: white;
+}
+.elements-tab-inner h2 {
+  color: #ffc600;
+}
