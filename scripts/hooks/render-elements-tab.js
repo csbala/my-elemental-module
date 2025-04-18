@@ -5,7 +5,7 @@ export function setupElementsTabHook(app, html, data) {
   const body = html.find('.sheet-body');
 
   // Add new tab button
-  const tabButton = $(`<a class="item" data-tab="elements" title="Elements"><i class="fas fa-bolt"></i></a>`);
+  const tabButton = $(`<a class="item" data-tab="elements" title="Elements"><i class="fas fa-star"></i></a>`);
   tabs.append(tabButton);
 
   // Load content
