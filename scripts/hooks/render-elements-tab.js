@@ -1,17 +1,28 @@
+// File: render-elements-tab.js
+
+// Main Hook Function
 export function setupElementsTabHook(app, html, data) {
   console.log("🛠️ Setting up Elements Tab...");
 
   const tabs = html.find('.tabs[data-group="primary"]');
   const tabBody = html.find('.tab-body');
 
-  // Check tab button
+  addTabButton(tabs);
+  addTabContent(tabBody);
+  rebindTabs(html);
+}
+
+// Adds the tab button if not present
+function addTabButton(tabs) {
   if (!tabs.find('[data-tab="elements"]').length) {
-    const tabButton = $(`<a class="item" data-tab="elements" title="Elements"><i class="fas fa-star"></i> Elements</a>`);
+    const tabButton = $(`<a class="item" data-tab="elements" title="Elements"><i class="fas fa-gem"></i></a>`);
     tabs.append(tabButton);
     console.log("✨ Tab button added");
   }
+}
 
-  // Inject content into .tab-body instead of .sheet-body
+// Adds the tab content section to the sheet
+function addTabContent(tabBody) {
   if (!tabBody.find('.tab[data-tab="elements"]').length) {
     const tabContent = $(`
       <div class="tab" data-tab="elements" data-group="primary" style="padding: 1em;">
@@ -27,14 +38,16 @@ export function setupElementsTabHook(app, html, data) {
     tabBody.append(tabContent);
     console.log("✅ Tab content added to .tab-body");
   }
+}
 
-  // Rebind Tabs
+// Rebinds the Tabs controller to recognize new content
+function rebindTabs(html) {
   const tabsEl = html.find('.tabs[data-group="primary"]')[0];
   const tabContentEls = html.find('.tab[data-group="primary"]');
   const tabsController = new Tabs(tabsEl, {
     navSelector: ".tabs",
     contentSelector: ".tab-body",
-    initial: "attributes", // you can change this default
+    initial: "attributes",
   });
   tabsController.bind(tabsEl, tabContentEls);
   console.log("🔁 Tabs re-bound to recognize new content");
