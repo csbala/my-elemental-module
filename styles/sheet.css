@@ -2,7 +2,7 @@
   position: relative;
   width: 400px;
   height: 400px;
-  margin: 0 auto;
+  margin: 100px auto 0 auto;
 }
 
 .circle {
@@ -23,19 +23,3 @@
   height: 380px;
 }
 
-/* Auto-position triangle nodes */
-.node-1 {
-  left: 200px;
-  top: 380px;
-  transform: translate(-50%, -50%);
-}
-.node-2 {
-  left: 44.12px;
-  top: 110px;
-  transform: translate(-50%, -50%);
-}
-.node-3 {
-  left: 355.88px;
-  top: 110px;
-  transform: translate(-50%, -50%);
-}
