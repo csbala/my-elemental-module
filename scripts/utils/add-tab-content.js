@@ -27,6 +27,11 @@ export async function addTabContent(tabBody) {
       const count = parseInt(input.value);
       if (Number.isNaN(count) || count < 1 || count > 12) return;
       createTriangleNodes(mainCircle, count);
+
+      Hooks.call('elementalCircleUpdated', {
+        container: mainCircle,
+        nodeCount: count
+      });
     });
   }
 }
