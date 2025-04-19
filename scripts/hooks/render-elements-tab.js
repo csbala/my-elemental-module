@@ -6,9 +6,9 @@ export function setupElementsTabHook(app, html, data) {
   console.log("🛠️ Setting up Elements Tab...");
 
   const tabs = html.find('.tabs[data-group="primary"]');
-  const tabBody = html.find('.tab-body');
+  const tabBody = html.find(".tab-body");
 
   addTabButton(tabs);
-  addTabContent(tabBody);
+  addTabContent(tabBody, app.actor);
   rebindTabs(html);
 }
