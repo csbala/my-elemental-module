@@ -1,8 +1,10 @@
 import { createTriangleNodes } from './load-circle-ui.js';
 
+const MODULE_PATH = "modules/my-elemental-module";
+
 export async function addTabContent(tabBody) {
   if (!tabBody.find('.tab[data-tab="elements"]').length) {
-    const html = await renderTemplate("modules/my-elemental-module/templates/elements-tab.html");
+    const html = await renderTemplate(`${MODULE_PATH}/templates/elements-tab.hbs`);
 
     const tabContent = $(`
       <div class="tab" data-tab="elements" data-group="primary">
@@ -23,6 +25,7 @@ export async function addTabContent(tabBody) {
 
     button.addEventListener('click', () => {
       const count = parseInt(input.value);
+      if (Number.isNaN(count) || count < 1 || count > 12) return;
       createTriangleNodes(mainCircle, count);
     });
   }
