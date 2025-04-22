@@ -2,13 +2,13 @@ import { createTriangleNodes } from "../core/node-renderer.js";
 import { getNodeCount, setNodeCount } from "../core/node-store.js";
 
 /**
- * Sets up the node UI (circle, input, button) in the Elements tab.
+ * Configures the node UI (circle, input, button) in the Elements tab.
  *
  * @param {ActorSheet} app - The application rendering the sheet.
  * @param {jQuery} tabContent - The jQuery-wrapped tab content element.
  * @param {jQuery} tabs - The jQuery-wrapped tab navigation container.
  */
-export async function setupNodeUI(app, tabContent, tabs) {
+export async function configureNodeUI(app, tabContent, tabs) {
   const mainCircle = tabContent[0].querySelector(".elemental-circle-container");
   const input = tabContent[0].querySelector("#nodeCountInput");
   const button = tabContent[0].querySelector("#updateNodesButton");
