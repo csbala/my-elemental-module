@@ -30,10 +30,13 @@ function debounce(func, wait) {
 const injectElementsTab = debounce(async (app, html) => {
   console.log("🛠️ Setting up Elements Tab...");
 
-  // Determine the currently active tab
+  // Get the stored active tab from the Actor's flags
+  const storedActiveTab =
+    (await app.actor.getFlag("my-elemental-module", "activeTab")) || "details";
+  // Determine the currently active tab from the DOM, falling back to the stored value
   const activeTab =
     html.find('.tabs[data-group="primary"] a.active').attr("data-tab") ||
-    "details";
+    storedActiveTab;
 
   const tabs = html.find('.tabs[data-group="primary"]');
   const tabBody = html.find(".tab-body");
@@ -41,7 +44,7 @@ const injectElementsTab = debounce(async (app, html) => {
   // Add the tab button if it doesn't exist
   if (!tabs.find('[data-tab="elements"]').length) {
     const tabButton = $(`
-      <a class="item control" data-tab="elements" title="Elements">
+      <a class="item control" data-tab="elements" data-tooltip="DND5E.Elements" aria-label="Elements">
         <i class="fas fa-gem"></i>
       </a>
     `);
@@ -96,8 +99,8 @@ const injectElementsTab = debounce(async (app, html) => {
           nodeCount: count,
         });
 
-        // Force re-render and preserve the active tab
-        app._activeTab = "elements"; // Store the active tab state
+        // Store the active tab state and force re-render
+        await app.actor.setFlag("my-elemental-module", "activeTab", "elements");
         await app.render();
 
         // Reset button state
@@ -105,6 +108,26 @@ const injectElementsTab = debounce(async (app, html) => {
         button.innerHTML = "Update";
       };
       button.addEventListener("click", button._updateHandler);
+
+      // Add a click handler to the tab button to store the active tab state
+      tabs
+        .find('a[data-tab="elements"]')
+        .off("click.tabState")
+        .on("click.tabState", async () => {
+          await app.actor.setFlag(
+            "my-elemental-module",
+            "activeTab",
+            "elements"
+          );
+        });
+      // Add click handlers to other tabs to update the stored state
+      tabs
+        .find('a[data-tab!="elements"]')
+        .off("click.tabState")
+        .on("click.tabState", async (event) => {
+          const tab = $(event.currentTarget).attr("data-tab");
+          await app.actor.setFlag("my-elemental-module", "activeTab", tab);
+        });
     } else {
       console.error("Failed to find required elements in tab content:", {
         mainCircle,
@@ -115,15 +138,15 @@ const injectElementsTab = debounce(async (app, html) => {
   }
 
   // Restore the active tab state
+  const finalActiveTab = app._activeTab || activeTab;
+  console.log("Restoring active tab:", finalActiveTab);
   tabs.find("a").removeClass("active");
   tabBody.find(".tab").removeClass("active");
-  tabs.find(`a[data-tab="${app._activeTab || activeTab}"]`).addClass("active");
-  tabBody
-    .find(`.tab[data-tab="${app._activeTab || activeTab}"]`)
-    .addClass("active");
+  tabs.find(`a[data-tab="${finalActiveTab}"]`).addClass("active");
+  tabBody.find(`.tab[data-tab="${finalActiveTab}"]`).addClass("active");
 
   app.activateTabs?.();
-}, 50);
+}, 100);
 
 /**
  * Hook: renderActorSheet5eCharacter
@@ -146,4 +169,18 @@ Hooks.on("updateActor", async (actor, updateData, options, userId) => {
     console.log("Actor updated, forcing re-render to preserve Elements tab...");
     await sheet.render();
   }
+});
+
+/**
+ * Hook: closeActorSheet5eCharacter
+ *
+ * Fired when the character sheet is closed.
+ * Ensures the active tab state is saved.
+ */
+Hooks.on("closeActorSheet5eCharacter", async (app, html) => {
+  const activeTab =
+    html.find('.tabs[data-group="primary"] a.active').attr("data-tab") ||
+    "details";
+  console.log("Sheet closing, saving active tab:", activeTab);
+  await app.actor.setFlag("my-elemental-module", "activeTab", activeTab);
 });
