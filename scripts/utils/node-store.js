@@ -1,7 +1,9 @@
 const STORAGE_KEY = "elementalNodeData";
 
 /**
- * Loads node count map from localStorage
+ * Load node count data for all actors from localStorage.
+ *
+ * @returns {Object<string, number>} An object mapping actor UUIDs to their node counts.
  */
 function loadNodeData() {
   const raw = localStorage.getItem(STORAGE_KEY);
@@ -9,14 +11,19 @@ function loadNodeData() {
 }
 
 /**
- * Saves node count map to localStorage
+ * Save the provided node count map to localStorage.
+ *
+ * @param {Object<string, number>} data - An object mapping actor UUIDs to their node counts.
  */
 function saveNodeData(data) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
 }
 
 /**
- * Gets node count for a specific actor
+ * Retrieve the stored node count for a specific actor.
+ *
+ * @param {string} actorId - The unique identifier (UUID) of the actor.
+ * @returns {number} The node count for the actor. Defaults to 3 if not found.
  */
 export function getNodeCount(actorId) {
   const data = loadNodeData();
@@ -24,7 +31,10 @@ export function getNodeCount(actorId) {
 }
 
 /**
- * Sets node count for a specific actor
+ * Set or update the node count for a specific actor in storage.
+ *
+ * @param {string} actorId - The unique identifier (UUID) of the actor.
+ * @param {number} count - The number of nodes to store for the actor.
  */
 export function setNodeCount(actorId, count) {
   const data = loadNodeData();
