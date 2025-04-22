@@ -7,7 +7,7 @@
   "minimumCoreVersion": "12",
   "compatibleCoreVersion": "12",
   "system": "dnd5e",
-  "esmodules": ["scripts/init.js"],
+  "esmodules": ["src/init.js"],
   "styles": ["styles/sheet.css"],
   "languages": [],
   "url": "https://github.com/csbala/my-elemental-module",
