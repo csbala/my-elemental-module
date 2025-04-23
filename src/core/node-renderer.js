@@ -57,6 +57,11 @@ export function createTriangleNodes(container, nodeCount, nodeValues = []) {
     input.style.outline = "none";
     input.style.width = "20px"; // Set a fixed width for the input field
     input.style.height = "20px"; // Set a fixed height for the input field
+    input.style.fontWeight = "bold";
+    input.style.fontFamily = "Arial, sans-serif"; // Use a common font for better compatibility
+    input.style.pointerEvents = "auto"; // Allow interaction with the input field
+    input.style.textShadow = "0 0 5px black"; // Add a text shadow for better visibility
+    input.style.transition = "border-color 0.3s"; // Smooth transition for border color
     input.dataset.nodeIndex = i; // Store the node index for event handling
 
     node.appendChild(input);

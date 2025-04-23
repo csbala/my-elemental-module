@@ -5,6 +5,23 @@
   margin: 100px auto 0 auto;
 }
 
+
+/* Gradient accent for the Update button */
+#updateNodesButton {
+  background: linear-gradient(45deg, cyan, #00b7eb);
+  border: none;
+  padding: 5px 10px;
+  color: white;
+  font-weight: bold;
+  border-radius: 4px;
+  transition: background 0.3s ease;
+}
+
+/* Hover effect for the Update button */
+#updateNodesButton:hover {
+  background: linear-gradient(45deg, #00b7eb, cyan);
+}
+
 .circle {
   width: 160px;
   height: 160px;
