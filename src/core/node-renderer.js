@@ -40,6 +40,7 @@ export function createTriangleNodes(container, nodeCount, nodeValues = []) {
     node.style.top = `${y}px`;
     node.style.transform = "translate(-50%, -50%)";
     node.style.position = "absolute";
+    node.style.display = "flex";
     node.style.alignItems = "center";
     node.style.justifyContent = "center";
 
@@ -49,13 +50,13 @@ export function createTriangleNodes(container, nodeCount, nodeValues = []) {
     input.value = nodeValues[i] ?? 0;
     input.style.border = "none";
     input.style.background = "none";
-    input.style.color = "white"; // Adjust color as needed
+    input.style.color = "white";
     input.style.textAlign = "center";
-    input.style.width = "100%";
-    input.style.height = "100%";
-    input.style.fontSize = "12px"; // Adjust font size as needed
+    input.style.fontSize = "12px";
     input.style.padding = "0";
     input.style.outline = "none";
+    input.style.width = "20px"; // Set a fixed width for the input field
+    input.style.height = "20px"; // Set a fixed height for the input field
     input.dataset.nodeIndex = i; // Store the node index for event handling
 
     node.appendChild(input);
