@@ -1,5 +1,10 @@
 import { createTriangleNodes } from "../core/node-renderer.js";
-import { getNodeCount, setNodeCount } from "../core/node-store.js";
+import {
+  getNodeCount,
+  setNodeCount,
+  getNodeValues,
+  setNodeValue,
+} from "../core/node-store.js";
 
 /**
  * Configures the node UI (circle, input, button) in the Elements tab.
@@ -15,8 +20,23 @@ export async function configureNodeUI(app, tabContent, tabs) {
 
   if (mainCircle && input && button) {
     const savedCount = await getNodeCount(app.actor);
-    createTriangleNodes(mainCircle, savedCount);
+    const nodeValues = await getNodeValues(app.actor);
+    createTriangleNodes(mainCircle, savedCount, nodeValues);
     input.value = savedCount;
+
+    // Add event listeners to node input fields
+    const nodeInputs = mainCircle.querySelectorAll(
+      ".circle input[type='number']"
+    );
+    nodeInputs.forEach((nodeInput) => {
+      nodeInput.addEventListener("input", async (event) => {
+        const nodeIndex = parseInt(event.target.dataset.nodeIndex, 10);
+        const value = parseInt(event.target.value, 10);
+        if (!isNaN(value)) {
+          await setNodeValue(app.actor, nodeIndex, value);
+        }
+      });
+    });
 
     button.removeEventListener("click", button._updateHandler); // Remove any existing listener
     button._updateHandler = async (event) => {
@@ -32,15 +52,30 @@ export async function configureNodeUI(app, tabContent, tabs) {
       button.disabled = true;
       button.innerHTML = "Updating...";
 
-      createTriangleNodes(mainCircle, count);
       await setNodeCount(app.actor, count);
+      const updatedValues = await getNodeValues(app.actor); // Get updated values after node count change
+      createTriangleNodes(mainCircle, count, updatedValues);
 
       Hooks.call("elementalCircleUpdated", {
         container: mainCircle,
         nodeCount: count,
       });
 
-      // Store the active tab state and force re-render
+      // Re-attach event listeners to new input fields
+      const newNodeInputs = mainCircle.querySelectorAll(
+        ".circle input[type='number']"
+      );
+      newNodeInputs.forEach((nodeInput) => {
+        nodeInput.addEventListener("input", async (event) => {
+          const nodeIndex = parseInt(event.target.dataset.nodeIndex, 10);
+          const value = parseInt(event.target.value, 10);
+          if (!isNaN(value)) {
+            await setNodeValue(app.actor, nodeIndex, value);
+          }
+        });
+      });
+
+      // Force re-render
       await app.actor.setFlag("my-elemental-module", "activeTab", "elements");
       await app.render();
 
