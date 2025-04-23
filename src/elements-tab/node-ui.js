@@ -21,7 +21,7 @@ export async function configureNodeUI(app, tabContent, tabs) {
   if (mainCircle && input && button) {
     const savedCount = await getNodeCount(app.actor);
     const nodeValues = await getNodeValues(app.actor);
-    createTriangleNodes(mainCircle, savedCount, nodeValues);
+    createTriangleNodes(mainCircle, savedCount, nodeValues, savedCount);
     input.value = savedCount;
 
     // Add event listeners to node input fields
@@ -52,9 +52,10 @@ export async function configureNodeUI(app, tabContent, tabs) {
       button.disabled = true;
       button.innerHTML = "Updating...";
 
+      const previousCount = await getNodeCount(app.actor); // Get the previous node count
       await setNodeCount(app.actor, count);
       const updatedValues = await getNodeValues(app.actor); // Get updated values after node count change
-      createTriangleNodes(mainCircle, count, updatedValues);
+      createTriangleNodes(mainCircle, count, updatedValues, previousCount);
 
       Hooks.call("elementalCircleUpdated", {
         container: mainCircle,

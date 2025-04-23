@@ -5,7 +5,6 @@
   margin: 100px auto 0 auto;
 }
 
-
 /* Gradient accent for the Update button */
 #updateNodesButton {
   background: linear-gradient(45deg, cyan, #00b7eb);
@@ -90,4 +89,46 @@
 
 .circle-controls button:hover {
   background-color: #00cccc;
+}
+
+/* Add transitions for position and size changes */
+.circle {
+  transition: left 0.5s ease, top 0.5s ease, width 0.5s ease, height 0.5s ease,
+    opacity 0.5s ease;
+}
+
+/* Animation for node creation (growing from small to full size) */
+.circle.node-create {
+  animation: grow 0.5s ease forwards;
+}
+
+/* Animation for node removal (shrinking to disappear) */
+.circle.node-remove {
+  animation: shrink 0.5s ease forwards;
+}
+
+@keyframes grow {
+  from {
+    width: 0;
+    height: 0;
+    opacity: 0;
+  }
+  to {
+    width: 160px;
+    height: 160px;
+    opacity: 1;
+  }
+}
+
+@keyframes shrink {
+  from {
+    width: 160px;
+    height: 160px;
+    opacity: 1;
+  }
+  to {
+    width: 0;
+    height: 0;
+    opacity: 0;
+  }
 }
