@@ -26,6 +26,7 @@
  * - Enables drag-and-drop for adding/removing features.
  * - Displays feature images as circular backgrounds when assigned.
  * - Toggles between awakened and dormant states on double-click.
+ * - Displays the element name (feature name) below the input field.
  */
 export function createTriangleNodes(
   container,
@@ -80,6 +81,7 @@ export function createTriangleNodes(
       input.dataset.nodeIndex = i;
     }
     const featureId = nodeFeatures[i] || null;
+    let featureName = "";
     if (featureId) {
       const feature =
         game.items.get(featureId) || app?.actor?.items.get(featureId);
@@ -95,6 +97,7 @@ export function createTriangleNodes(
         node.style.border = "none";
         node.style.boxShadow = "0 0 20px #00ffff";
         node.dataset.featureId = featureId;
+        featureName = feature.name || "";
       } else {
         console.log(
           `Feature ${featureId} not found or has default image for node ${i}`
@@ -113,6 +116,14 @@ export function createTriangleNodes(
       node.style.boxShadow = "0 0 20px #00ffff, 0 0 40px #00ffff inset";
       delete node.dataset.featureId;
     }
+    // Update the element name
+    let nameElement = node.querySelector(".element-name");
+    if (!nameElement) {
+      nameElement = document.createElement("span");
+      nameElement.classList.add("element-name");
+      node.appendChild(nameElement);
+    }
+    nameElement.textContent = featureName;
     // Update the node's state (awakened/dormant)
     const isAwakened = nodeStates[i] || false;
     if (isAwakened) {
@@ -143,8 +154,10 @@ export function createTriangleNodes(
       node.style.display = "flex";
       node.style.alignItems = "center";
       node.style.justifyContent = "center";
+      node.style.flexDirection = "column"; // Stack input and name vertically
 
       const featureId = nodeFeatures[i] || null;
+      let featureName = "";
       if (featureId) {
         const feature =
           game.items.get(featureId) || app?.actor?.items.get(featureId);
@@ -160,6 +173,7 @@ export function createTriangleNodes(
           node.style.border = "none";
           node.style.boxShadow = "0 0 20px #00ffff";
           node.dataset.featureId = featureId;
+          featureName = feature.name || "";
         }
       }
 
@@ -189,7 +203,13 @@ export function createTriangleNodes(
       input.style.transition = "border-color 0.3s";
       input.dataset.nodeIndex = i;
 
+      // Create the element name display
+      const nameElement = document.createElement("span");
+      nameElement.classList.add("element-name");
+      nameElement.textContent = featureName;
+
       node.appendChild(input);
+      node.appendChild(nameElement);
       container.appendChild(node);
 
       // Attach drag-and-drop and double-click handlers

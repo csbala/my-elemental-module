@@ -167,3 +167,26 @@
   color: #888; /* Slightly dim the input text for a dormant look */
   text-shadow: none; /* Remove text shadow for a more subdued look */
 }
+
+/* Style for the element name */
+.element-name {
+  color: #00ffff; /* Cyan text to match the theme */
+  font-size: 10px; /* Small font size to fit within the node */
+  font-family: "Segoe UI", sans-serif; /* Match the module's font */
+  font-weight: bold;
+  text-shadow: 0 0 5px #00ffff; /* Subtle glow effect */
+  text-align: center;
+  margin-top: 5px; /* Space between the input field and name */
+  pointer-events: none; /* Prevent interference with drag-and-drop */
+  z-index: 1; /* Ensure it appears above the dark overlay */
+  max-width: 140px; /* Prevent overflow */
+  overflow: hidden;
+  text-overflow: ellipsis; /* Handle long names */
+  white-space: nowrap;
+}
+
+/* Dim the element name when the node is dormant */
+.node-dormant .element-name {
+  color: #666; /* Dimmed color */
+  text-shadow: none; /* Remove glow */
+}
