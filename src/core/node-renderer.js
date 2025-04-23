@@ -27,6 +27,7 @@
  * - Displays feature images as circular backgrounds when assigned.
  * - Toggles between awakened and dormant states on double-click.
  * - Displays the element name (feature name) below the input field.
+ * - Dynamically generates spinning circle outlines for the vortex-circles layer.
  */
 export function createTriangleNodes(
   container,
@@ -57,6 +58,26 @@ export function createTriangleNodes(
     setTimeout(() => {
       existingNodes.slice(nodeCount).forEach((node) => node.remove());
     }, 500); // Match the animation duration (0.5s)
+  }
+
+  // Dynamically generate the spinning circles for the vortex-circles layer
+  const vortexCircles = container.querySelector(".vortex-circles");
+  if (vortexCircles) {
+    // Generate 17 circles with random positions and sizes
+    const circleCount = 25;
+    const circleStyles = [];
+    for (let i = 0; i < circleCount; i++) {
+      // Random position between 40% and 55% for both x and y
+      const posX = 35 + Math.random() * 25; // 40% to 55%
+      const posY = 35 + Math.random() * 25; // 40% to 55%
+      // Circle sizes in descending order from 170px to 10px, as in your example
+      const size = 170 - i * 10; // 170px, 160px, ..., 10px
+      // Generate the radial-gradient for the circle outline
+      const gradient = `radial-gradient(circle at ${posX}% ${posY}%, transparent 0, transparent 20px, rgba(0, 255, 255, 0.13) ${size}px, transparent 22px)`;
+      circleStyles.push(gradient);
+    }
+    // Apply the generated styles to the vortex-circles element
+    vortexCircles.style.background = circleStyles.join(",");
   }
 
   // Calculate new positions for all nodes (even existing ones)
