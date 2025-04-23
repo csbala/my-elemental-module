@@ -171,7 +171,7 @@
 /* Style for the element name */
 .element-name {
   color: #00ffff; /* Cyan text to match the theme */
-  font-size: 10px; /* Small font size to fit within the node */
+  font-size: 11px; /* Small font size to fit within the node */
   font-family: "Segoe UI", sans-serif; /* Match the module's font */
   font-weight: bold;
   text-shadow: 0 0 5px #00ffff; /* Subtle glow effect */

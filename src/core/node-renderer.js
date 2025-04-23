@@ -71,7 +71,7 @@ export function createTriangleNodes(
       const posX = 35 + Math.random() * 25; // 40% to 55%
       const posY = 35 + Math.random() * 25; // 40% to 55%
       // Circle sizes in descending order from 170px to 10px, as in your example
-      const size = 170 - i * 10; // 170px, 160px, ..., 10px
+      const size = 170 - i * 3; // 170px, 160px, ..., 10px
       // Generate the radial-gradient for the circle outline
       const gradient = `radial-gradient(circle at ${posX}% ${posY}%, transparent 0, transparent 20px, rgba(0, 255, 255, 0.13) ${size}px, transparent 22px)`;
       circleStyles.push(gradient);
@@ -212,11 +212,11 @@ export function createTriangleNodes(
       input.style.background = "none";
       input.style.color = "white";
       input.style.textAlign = "center";
-      input.style.fontSize = "12px";
+      input.style.fontSize = "13px";
       input.style.padding = "0";
       input.style.outline = "none";
-      input.style.width = "20px";
-      input.style.height = "20px";
+      input.style.width = "30px";
+      input.style.height = "30px";
       input.style.fontWeight = "bold";
       input.style.fontFamily = "Arial, sans-serif";
       input.style.pointerEvents = "auto";
