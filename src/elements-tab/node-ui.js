@@ -28,6 +28,14 @@ export async function configureNodeUI(app, tabContent, tabs) {
     const nodeFeatures = await getNodeFeatures(app.actor);
     const nodeStates = await getNodeStates(app.actor);
 
+    // Add the vortex-circles div for the new spinning circles animation
+    let vortexCircles = mainCircle.querySelector(".vortex-circles");
+    if (!vortexCircles) {
+      vortexCircles = document.createElement("div");
+      vortexCircles.classList.add("vortex-circles");
+      mainCircle.appendChild(vortexCircles);
+    }
+
     // Define drag-and-drop and state toggle handlers
     const onFeatureDrop = async (nodeIndex, item) => {
       console.log(

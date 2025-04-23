@@ -190,3 +190,149 @@
   color: #666; /* Dimmed color */
   text-shadow: none; /* Remove glow */
 }
+
+/* New layer for spinning circles inside the main circle */
+.vortex-circles {
+  /* position: absolute; */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  /* Create larger, randomly sized and positioned circle outlines */
+  background: radial-gradient(
+      circle at 50% 50%,
+      transparent 0,
+      transparent 20px,
+      rgba(0, 255, 255, 0.13) 170px,
+      transparent 22px
+    ),
+    radial-gradient(
+      circle at 40% 50%,
+      transparent 0,
+      transparent 20px,
+      rgba(0, 255, 255, 0.13) 160px,
+      transparent 22px
+    ),
+    radial-gradient(
+      circle at 50% 50%,
+      transparent 0,
+      transparent 20px,
+      rgba(0, 255, 255, 0.13) 150px,
+      transparent 22px
+    ),
+    radial-gradient(
+      circle at 50% 55%,
+      transparent 0,
+      transparent 20px,
+      rgba(0, 255, 255, 0.13) 140px,
+      transparent 22px
+    ),
+    radial-gradient(
+      circle at 55% 50%,
+      transparent 0,
+      transparent 20px,
+      rgba(0, 255, 255, 0.13) 130px,
+      transparent 22px
+    ),
+    radial-gradient(
+      circle at 50% 45%,
+      transparent 0,
+      transparent 20px,
+      rgba(0, 255, 255, 0.13) 120px,
+      transparent 22px
+    ),
+    radial-gradient(
+      circle at 45% 50%,
+      transparent 0,
+      transparent 20px,
+      rgba(0, 255, 255, 0.13) 110px,
+      transparent 22px
+    ),
+    radial-gradient(
+      circle at 45% 55%,
+      transparent 0,
+      transparent 20px,
+      rgba(0, 255, 255, 0.13) 100px,
+      transparent 22px
+    ),
+    radial-gradient(
+      circle at 55% 45%,
+      transparent 0,
+      transparent 20px,
+      rgba(0, 255, 255, 0.13) 90px,
+      transparent 22px
+    ),
+    radial-gradient(
+      circle at 40% 55%,
+      transparent 0,
+      transparent 20px,
+      rgba(0, 255, 255, 0.13) 80px,
+      transparent 22px
+    ),
+    radial-gradient(
+      circle at 50% 50%,
+      transparent 0,
+      transparent 20px,
+      rgba(0, 255, 255, 0.13) 70px,
+      transparent 22px
+    ),
+    radial-gradient(
+      circle at 50% 55%,
+      transparent 0,
+      transparent 20px,
+      rgba(0, 255, 255, 0.13) 60px,
+      transparent 22px
+    ),
+    radial-gradient(
+      circle at 55% 50%,
+      transparent 0,
+      transparent 20px,
+      rgba(0, 255, 255, 0.13) 50px,
+      transparent 22px
+    ),
+    radial-gradient(
+      circle at 50% 45%,
+      transparent 0,
+      transparent 20px,
+      rgba(0, 255, 255, 0.13) 40px,
+      transparent 22px
+    ),
+    radial-gradient(
+      circle at 45% 50%,
+      transparent 0,
+      transparent 20px,
+      rgba(0, 255, 255, 0.13) 30px,
+      transparent 22px
+    ),
+    radial-gradient(
+      circle at 45% 55%,
+      transparent 0,
+      transparent 20px,
+      rgba(0, 255, 255, 0.13) 20px,
+      transparent 22px
+    ),
+    radial-gradient(
+      circle at 55% 45%,
+      transparent 0,
+      transparent 20px,
+      rgba(0, 255, 255, 0.13) 10px,
+      transparent 22px
+    );
+  animation: spin-circles 20s linear infinite; /* Slower spinning animation */
+}
+
+/* Keyframes for the spinning circles with pulsing effect */
+@keyframes spin-circles {
+  0% {
+    transform: rotate(0deg) scale(1);
+    opacity: 0.6;
+  }
+  50% {
+    transform: rotate(-180deg) scale(0.9);
+    opacity: 0.4;
+  }
+  100% {
+    transform: rotate(-360deg) scale(1);
+    opacity: 0.6;
+  }
+}
