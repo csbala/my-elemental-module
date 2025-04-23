@@ -4,6 +4,8 @@ import {
   setNodeCount,
   getNodeValues,
   setNodeValue,
+  getNodeFeatures,
+  setNodeFeature,
 } from "../core/node-store.js";
 
 /**
@@ -21,7 +23,88 @@ export async function configureNodeUI(app, tabContent, tabs) {
   if (mainCircle && input && button) {
     const savedCount = await getNodeCount(app.actor);
     const nodeValues = await getNodeValues(app.actor);
-    createTriangleNodes(mainCircle, savedCount, nodeValues, savedCount);
+    const nodeFeatures = await getNodeFeatures(app.actor);
+
+    // Define drag-and-drop handlers
+    const onFeatureDrop = async (nodeIndex, item) => {
+      console.log(
+        `Dropping feature ${item.name} (ID: ${item.id}) onto node ${nodeIndex}`
+      );
+
+      // Check if the node already has a feature
+      const currentFeatures = await getNodeFeatures(app.actor);
+      if (currentFeatures[nodeIndex]) {
+        console.log(`Node ${nodeIndex} already has a feature. Replacing it.`);
+        await app.actor.deleteEmbeddedDocuments("Item", [
+          currentFeatures[nodeIndex],
+        ]);
+      }
+
+      // Add the feature to the character sheet as an owned item
+      let featureId;
+      if (item.parent) {
+        // Item is already owned by another actor; create a copy
+        console.log("Item is owned by another actor. Creating a copy.");
+        const ownedItem = await app.actor.createEmbeddedDocuments("Item", [
+          item.toObject(),
+        ]);
+        featureId = ownedItem[0].id;
+      } else {
+        // Item is unowned (e.g., from the Items Directory); add it directly
+        console.log("Item is unowned. Adding directly to actor.");
+        const ownedItem = await app.actor.createEmbeddedDocuments("Item", [
+          item.toObject(),
+        ]);
+        featureId = ownedItem[0].id;
+      }
+
+      console.log(`Feature added to character sheet with ID: ${featureId}`);
+
+      // Update the node's feature ID
+      await setNodeFeature(app.actor, nodeIndex, featureId);
+      console.log(`Feature ID ${featureId} set for node ${nodeIndex}`);
+
+      // Force re-render to update the UI
+      await app.actor.setFlag("my-elemental-module", "activeTab", "elements");
+      await app.render();
+      console.log("Re-rendered sheet after dropping feature.");
+    };
+
+    const onFeatureRemove = async (nodeIndex) => {
+      console.log(`Removing feature from node ${nodeIndex}`);
+      const features = await getNodeFeatures(app.actor);
+      const featureId = features[nodeIndex];
+      if (!featureId) {
+        console.log(`No feature to remove from node ${nodeIndex}`);
+        return;
+      }
+
+      // Remove the feature from the character sheet
+      await app.actor.deleteEmbeddedDocuments("Item", [featureId]);
+      console.log(`Feature ${featureId} removed from character sheet.`);
+
+      // Clear the feature from the node
+      await setNodeFeature(app.actor, nodeIndex, null);
+      console.log(`Feature cleared from node ${nodeIndex}`);
+
+      // Force re-render to update the UI
+      await app.actor.setFlag("my-elemental-module", "activeTab", "elements");
+      await app.render();
+      console.log("Re-rendered sheet after removing feature.");
+    };
+
+    createTriangleNodes(
+      mainCircle,
+      savedCount,
+      nodeValues,
+      nodeFeatures,
+      savedCount,
+      {
+        app,
+        onFeatureDrop,
+        onFeatureRemove,
+      }
+    );
     input.value = savedCount;
 
     // Add event listeners to node input fields
@@ -55,7 +138,19 @@ export async function configureNodeUI(app, tabContent, tabs) {
       const previousCount = await getNodeCount(app.actor); // Get the previous node count
       await setNodeCount(app.actor, count);
       const updatedValues = await getNodeValues(app.actor); // Get updated values after node count change
-      createTriangleNodes(mainCircle, count, updatedValues, previousCount);
+      const updatedFeatures = await getNodeFeatures(app.actor); // Get updated features
+      createTriangleNodes(
+        mainCircle,
+        count,
+        updatedValues,
+        updatedFeatures,
+        previousCount,
+        {
+          app,
+          onFeatureDrop,
+          onFeatureRemove,
+        }
+      );
 
       Hooks.call("elementalCircleUpdated", {
         container: mainCircle,

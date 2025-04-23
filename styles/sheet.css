@@ -132,3 +132,10 @@
     opacity: 0;
   }
 }
+
+css Copy .circle[data-feature-id] {
+  transition: box-shadow 0.3s ease;
+}
+.circle[data-feature-id]:hover {
+  box-shadow: 0 0 30px #00ffff, 0 0 50px #00ffff inset;
+}

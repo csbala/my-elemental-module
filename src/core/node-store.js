@@ -48,3 +48,33 @@ export async function setNodeValue(actor, nodeIndex, value) {
   values[nodeIndex] = value;
   await actor.setFlag("my-elemental-module", "nodeValues", values);
 }
+
+/**
+ * Retrieve the stored feature IDs for each node.
+ *
+ * @param {Actor5e} actor - The Foundry VTT actor object.
+ * @returns {Promise<(string|null)[]>} The feature IDs for each node. Defaults to an array of nulls based on node count.
+ */
+export async function getNodeFeatures(actor) {
+  const nodeCount = await getNodeCount(actor);
+  const features =
+    (await actor.getFlag("my-elemental-module", "nodeFeatures")) || [];
+  // Ensure the array has the correct length, filling with null for nodes without features
+  return Array(nodeCount)
+    .fill(null)
+    .map((_, index) => features[index] ?? null);
+}
+
+/**
+ * Set or update the feature ID for a specific node.
+ *
+ * @param {Actor5e} actor - The Foundry VTT actor object.
+ * @param {number} nodeIndex - The index of the node to update.
+ * @param {string|null} featureId - The ID of the feature to set (or null to clear).
+ * @returns {Promise<void>}
+ */
+export async function setNodeFeature(actor, nodeIndex, featureId) {
+  const features = await getNodeFeatures(actor);
+  features[nodeIndex] = featureId;
+  await actor.setFlag("my-elemental-module", "nodeFeatures", features);
+}
