@@ -6,6 +6,8 @@ import {
   setNodeValue,
   getNodeFeatures,
   setNodeFeature,
+  getNodeStates,
+  setNodeState,
 } from "../core/node-store.js";
 
 /**
@@ -24,8 +26,9 @@ export async function configureNodeUI(app, tabContent, tabs) {
     const savedCount = await getNodeCount(app.actor);
     const nodeValues = await getNodeValues(app.actor);
     const nodeFeatures = await getNodeFeatures(app.actor);
+    const nodeStates = await getNodeStates(app.actor);
 
-    // Define drag-and-drop handlers
+    // Define drag-and-drop and state toggle handlers
     const onFeatureDrop = async (nodeIndex, item) => {
       console.log(
         `Dropping feature ${item.name} (ID: ${item.id}) onto node ${nodeIndex}`
@@ -93,16 +96,31 @@ export async function configureNodeUI(app, tabContent, tabs) {
       console.log("Re-rendered sheet after removing feature.");
     };
 
+    const onStateToggle = async (nodeIndex, isAwakened) => {
+      console.log(
+        `Toggling state for node ${nodeIndex} to ${
+          isAwakened ? "awakened" : "dormant"
+        }`
+      );
+      await setNodeState(app.actor, nodeIndex, isAwakened);
+      // Force re-render to update the UI
+      await app.actor.setFlag("my-elemental-module", "activeTab", "elements");
+      await app.render();
+      console.log("Re-rendered sheet after toggling state.");
+    };
+
     createTriangleNodes(
       mainCircle,
       savedCount,
       nodeValues,
       nodeFeatures,
+      nodeStates,
       savedCount,
       {
         app,
         onFeatureDrop,
         onFeatureRemove,
+        onStateToggle,
       }
     );
     input.value = savedCount;
@@ -139,16 +157,19 @@ export async function configureNodeUI(app, tabContent, tabs) {
       await setNodeCount(app.actor, count);
       const updatedValues = await getNodeValues(app.actor); // Get updated values after node count change
       const updatedFeatures = await getNodeFeatures(app.actor); // Get updated features
+      const updatedStates = await getNodeStates(app.actor); // Get updated states
       createTriangleNodes(
         mainCircle,
         count,
         updatedValues,
         updatedFeatures,
+        updatedStates,
         previousCount,
         {
           app,
           onFeatureDrop,
           onFeatureRemove,
+          onStateToggle,
         }
       );
 

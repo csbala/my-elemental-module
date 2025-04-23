@@ -78,3 +78,33 @@ export async function setNodeFeature(actor, nodeIndex, featureId) {
   features[nodeIndex] = featureId;
   await actor.setFlag("my-elemental-module", "nodeFeatures", features);
 }
+
+/**
+ * Retrieve the stored states (awakened/dormant) for each node.
+ *
+ * @param {Actor5e} actor - The Foundry VTT actor object.
+ * @returns {Promise<boolean[]>} The states for each node (true = awakened, false = dormant). Defaults to an array of false based on node count.
+ */
+export async function getNodeStates(actor) {
+  const nodeCount = await getNodeCount(actor);
+  const states =
+    (await actor.getFlag("my-elemental-module", "nodeStates")) || [];
+  // Ensure the array has the correct length, filling with false (dormant) for new nodes
+  return Array(nodeCount)
+    .fill(false)
+    .map((_, index) => states[index] ?? false);
+}
+
+/**
+ * Set or update the state (awakened/dormant) for a specific node.
+ *
+ * @param {Actor5e} actor - The Foundry VTT actor object.
+ * @param {number} nodeIndex - The index of the node to update.
+ * @param {boolean} isAwakened - The state to set (true = awakened, false = dormant).
+ * @returns {Promise<void>}
+ */
+export async function setNodeState(actor, nodeIndex, isAwakened) {
+  const states = await getNodeStates(actor);
+  states[nodeIndex] = isAwakened;
+  await actor.setFlag("my-elemental-module", "nodeStates", states);
+}

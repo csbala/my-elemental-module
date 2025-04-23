@@ -3,18 +3,21 @@
  *
  * This function creates nodes with interactable input fields in their centers to represent
  * elemental bonuses. It supports drag-and-drop for adding/removing features, displaying feature
- * images as circular backgrounds, and animations for node creation, removal, and position changes.
+ * images as circular backgrounds, animations for node creation, removal, and position changes,
+ * and toggling between awakened/dormant states via double-click.
  *
  * @function createTriangleNodes
  * @param {HTMLElement} container - The DOM element that will contain the circular node layout.
  * @param {number} nodeCount - The number of nodes to generate and arrange around the center.
  * @param {number[]} nodeValues - The values for each node (default to 0 if not provided).
  * @param {string|null[]} nodeFeatures - The feature IDs for each node (null if no feature).
+ * @param {boolean[]} nodeStates - The states for each node (true = awakened, false = dormant).
  * @param {number} previousNodeCount - The previous number of nodes for animation purposes.
  * @param {Object} options - Additional options.
  * @param {Object} options.app - The character sheet application.
  * @param {Function} options.onFeatureDrop - Callback when a feature is dropped onto a node.
  * @param {Function} options.onFeatureRemove - Callback when a feature is dragged out of a node.
+ * @param {Function} options.onStateToggle - Callback when a node's state is toggled.
  *
  * Behavior:
  * - Animates removal of nodes if nodeCount decreases.
@@ -22,14 +25,16 @@
  * - Transitions existing nodes to their new positions.
  * - Enables drag-and-drop for adding/removing features.
  * - Displays feature images as circular backgrounds when assigned.
+ * - Toggles between awakened and dormant states on double-click.
  */
 export function createTriangleNodes(
   container,
   nodeCount,
   nodeValues = [],
   nodeFeatures = [],
+  nodeStates = [],
   previousNodeCount = 0,
-  { app, onFeatureDrop, onFeatureRemove } = {}
+  { app, onFeatureDrop, onFeatureRemove, onStateToggle } = {}
 ) {
   const centerX = 200;
   const centerY = 200;
@@ -108,8 +113,22 @@ export function createTriangleNodes(
       node.style.boxShadow = "0 0 20px #00ffff, 0 0 40px #00ffff inset";
       delete node.dataset.featureId;
     }
-    // Re-attach drag-and-drop handlers
-    attachDragDropHandlers(node, i, app, onFeatureDrop, onFeatureRemove);
+    // Update the node's state (awakened/dormant)
+    const isAwakened = nodeStates[i] || false;
+    if (isAwakened) {
+      node.classList.remove("node-dormant");
+    } else {
+      node.classList.add("node-dormant");
+    }
+    // Re-attach drag-and-drop and double-click handlers
+    attachNodeHandlers(
+      node,
+      i,
+      app,
+      onFeatureDrop,
+      onFeatureRemove,
+      onStateToggle
+    );
   }
 
   // Create new nodes if nodeCount increases
@@ -144,6 +163,12 @@ export function createTriangleNodes(
         }
       }
 
+      // Set the node's state (default to dormant)
+      const isAwakened = nodeStates[i] || false;
+      if (!isAwakened) {
+        node.classList.add("node-dormant");
+      }
+
       // Create the input field
       const input = document.createElement("input");
       input.type = "number";
@@ -167,27 +192,36 @@ export function createTriangleNodes(
       node.appendChild(input);
       container.appendChild(node);
 
-      // Attach drag-and-drop handlers
-      attachDragDropHandlers(node, i, app, onFeatureDrop, onFeatureRemove);
+      // Attach drag-and-drop and double-click handlers
+      attachNodeHandlers(
+        node,
+        i,
+        app,
+        onFeatureDrop,
+        onFeatureRemove,
+        onStateToggle
+      );
     }
   }
 }
 
 /**
- * Attaches drag-and-drop event listeners to a node.
+ * Attaches drag-and-drop and double-click event listeners to a node.
  *
  * @param {HTMLElement} node - The node element.
  * @param {number} nodeIndex - The index of the node.
  * @param {Object} app - The character sheet application.
  * @param {Function} onFeatureDrop - Callback when a feature is dropped onto the node.
  * @param {Function} onFeatureRemove - Callback when a feature is dragged out of the node.
+ * @param {Function} onStateToggle - Callback when a node's state is toggled.
  */
-function attachDragDropHandlers(
+function attachNodeHandlers(
   node,
   nodeIndex,
   app,
   onFeatureDrop,
-  onFeatureRemove
+  onFeatureRemove,
+  onStateToggle
 ) {
   // Allow dropping items onto the node
   node.addEventListener("dragover", (event) => {
@@ -252,6 +286,17 @@ function attachDragDropHandlers(
     setTimeout(async () => {
       await onFeatureRemove(nodeIndex);
     }, 0);
+  });
+
+  // Add double-click handler to toggle awakened/dormant state
+  node.addEventListener("dblclick", async () => {
+    const isAwakened = !node.classList.contains("node-dormant");
+    if (isAwakened) {
+      node.classList.add("node-dormant");
+    } else {
+      node.classList.remove("node-dormant");
+    }
+    await onStateToggle(nodeIndex, !isAwakened);
   });
 
   // Make the node draggable if it has a feature

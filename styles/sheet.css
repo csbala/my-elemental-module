@@ -133,9 +133,37 @@
   }
 }
 
-css Copy .circle[data-feature-id] {
+.circle[data-feature-id] {
   transition: box-shadow 0.3s ease;
 }
+
 .circle[data-feature-id]:hover {
   box-shadow: 0 0 30px #00ffff, 0 0 50px #00ffff inset;
+}
+
+/* Dormant state: grey overlay and no glow */
+.node-dormant {
+  position: relative; /* Ensure pseudo-element positions correctly */
+  border: 4px solid #333 !important; /* Darker border */
+  box-shadow: none !important; /* Remove glow */
+}
+
+/* Use a pseudo-element for the dark overlay */
+.node-dormant::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5); /* Semi-transparent black overlay */
+  border-radius: 50%; /* Match the node's circular shape */
+}
+
+/* Ensure the input field remains visible above the overlay */
+.node-dormant input {
+  position: relative;
+  z-index: 1;
+  color: #888; /* Slightly dim the input text for a dormant look */
+  text-shadow: none; /* Remove text shadow for a more subdued look */
 }
