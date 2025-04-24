@@ -8,7 +8,8 @@ const STORE_CONFIG = {
     nodeValue: 0,
     nodeFeature: null,
     nodeState: false,
-    themeColor: "#00ffff", // Default theme color (cyan)
+    themeColor: "#00ffff",
+    nodeCorrupted: false, // Default corruption state (false = not corrupted)
   },
 };
 
@@ -67,9 +68,7 @@ function normalizeArray(array, length, defaultValue) {
  */
 function validateNodeIndex(nodeIndex, nodeCount) {
   if (!Number.isInteger(nodeIndex) || nodeIndex < 0 || nodeIndex >= nodeCount) {
-    throw new Error(
-      `Invalid node index: ${nodeIndex}. Must be between 0 and ${nodeCount - 1}`
-    );
+    throw new Error(`Invalid node index: ${nodeIndex}. Must be between 0 and ${nodeCount - 1}`);
   }
 }
 
@@ -155,9 +154,7 @@ export async function setNodeFeature(actor, nodeIndex, featureId) {
   validateNodeIndex(nodeIndex, nodeCount);
 
   if (featureId !== null && typeof featureId !== "string") {
-    throw new Error(
-      `Invalid feature ID: ${featureId}. Must be a string or null`
-    );
+    throw new Error(`Invalid feature ID: ${featureId}. Must be a string or null`);
   }
 
   const features = await getNodeFeatures(actor);
@@ -199,6 +196,39 @@ export async function setNodeState(actor, nodeIndex, isAwakened) {
 }
 
 /**
+ * Retrieve the stored corruption states for each node.
+ *
+ * @param {Actor5e} actor - The Foundry VTT actor object.
+ * @returns {Promise<boolean[]>} The corruption states for each node (true = corrupted, false = not corrupted).
+ */
+export async function getNodeCorruptionStates(actor) {
+  const nodeCount = await getNodeCount(actor);
+  const corruptedStates = await getFlag(actor, "nodeCorruptedStates", []);
+  return normalizeArray(corruptedStates, nodeCount, STORE_CONFIG.defaults.nodeCorrupted);
+}
+
+/**
+ * Set or update the corruption state for a specific node.
+ *
+ * @param {Actor5e} actor - The Foundry VTT actor object.
+ * @param {number} nodeIndex - The index of the node to update.
+ * @param {boolean} isCorrupted - The corruption state to set (true = corrupted, false = not corrupted).
+ * @returns {Promise<void>}
+ */
+export async function setNodeCorruptionState(actor, nodeIndex, isCorrupted) {
+  const nodeCount = await getNodeCount(actor);
+  validateNodeIndex(nodeIndex, nodeCount);
+
+  if (typeof isCorrupted !== "boolean") {
+    throw new Error(`Invalid corruption state: ${isCorrupted}. Must be a boolean`);
+  }
+
+  const corruptedStates = await getNodeCorruptionStates(actor);
+  corruptedStates[nodeIndex] = isCorrupted;
+  await setFlag(actor, "nodeCorruptedStates", corruptedStates);
+}
+
+/**
  * Retrieve the stored theme color for a specific actor.
  *
  * @param {Actor5e} actor - The Foundry VTT actor object.
@@ -217,9 +247,7 @@ export async function getThemeColor(actor) {
  */
 export async function setThemeColor(actor, color) {
   if (!/^#[0-9A-F]{6}$/i.test(color)) {
-    throw new Error(
-      `Invalid color: ${color}. Must be a hex color (e.g., "#00ffff")`
-    );
+    throw new Error(`Invalid color: ${color}. Must be a hex color (e.g., "#00ffff")`);
   }
   await setFlag(actor, "themeColor", color);
 }

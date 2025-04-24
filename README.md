@@ -1,182 +1,118 @@
-# My Elemental Module 🌟
+Elemental Module for Foundry VTT
+✨ A narrative power system for D&D and beyond, brought to life in Foundry VTT!
+The Elemental Module integrates the Element System—a metaphysical, narrative-driven power system—into Foundry VTT character sheets. It allows players to manage their character's elements, visually interact with them, and roll elemental dice, all while enhancing the storytelling experience with dynamic visuals and mechanics.
+📖 Overview
+The Element System defines characters through metaphysical "Elements" (e.g., Fire, Sword, Humanity) that shape their essence, values, and powers. This module brings that system to Foundry VTT with:
 
-**My Elemental Module** is a Foundry VTT module that enhances D&D 5e character sheets by adding a custom "Elements" tab. This tab allows players to manage elemental attributes with a visually appealing node-based UI, where they can set and visualize a number of elemental nodes in a circular layout. The module is designed for seamless multiplayer use, with data persistence across clients using Foundry’s flag system.
+A custom "Elements" tab in the character sheet.
+Visual nodes representing each element, with drag-and-drop functionality for assigning features.
+Awakened/dormant states, corruption visuals, and theme color customization.
+Custom chat messages for rolling elemental dice with thematic styling.
 
-## Features ✨
+This module is designed for anime-tier storytelling, powered by roleplay, and fueled by dreams. It emphasizes character expression and narrative depth while providing engaging gameplay mechanics.
+🚀 Features
 
-- **Custom Elements Tab**: Adds a new "Elements" tab to D&D 5e character sheets.
-- **Node-Based UI**: Visualize elemental attributes with a circular node layout (1–12 nodes).
-- **Persistent Data**: Node count and active tab state sync across all clients using Foundry’s flag system.
-- **User-Friendly**: Intuitive interface with visual feedback for updates and input validation.
-- **Unit Tested**: Includes a comprehensive Jest test suite to ensure reliability.
+Dynamic Element Nodes: Add up to 12 element nodes in a circular layout, each with a customizable bonus value.
+Drag-and-Drop Features: Assign features (e.g., items of type "feat") to nodes by dragging them from the inventory or items directory.
+Awakened/Dormant States: Toggle elements between awakened and dormant states with a double-click. Dormant elements are greyed out, non-editable, and non-rollable.
+Corruption Visuals: Toggle element corruption with a double right-click, displaying a dark overlay, animated cracks, and a pulsing red aura.
+Theme Color Customization: Choose a theme color for the UI, which applies to nodes, text, borders, and chat messages.
+Elemental Dice Rolling: Click an awakened element's name to roll a 1d6 plus its bonus, with a custom chat message styled in the theme color.
+Persistent Storage: All element data (count, values, features, states, corruption, theme color) is stored in actor flags, persisting across sessions.
+Visual Feedback: Nodes animate when created or removed, with hover effects, pulsing glows, and corruption visuals enhancing immersion.
 
-## Screenshots 📸
+📦 Installation
 
-_The Elements tab in action, showing the node-based UI._
+Download the Module:
 
-## Installation 🚀
+Clone or download this repository into your Foundry VTT modules directory (Data/modules/).
+Alternatively, install via the Foundry VTT module installer by providing the URL to this repository.
 
-1. **Download the Module**:
+Enable the Module:
 
-   - Download the latest release from GitHub Releases (or your preferred hosting platform).
+In Foundry VTT, go to the "Game Settings" tab.
+Click "Manage Modules" and enable the "Elemental Module" by checking its box.
+Save your settings and reload the world.
 
-2. **Install in Foundry VTT**:
+Verify Installation:
 
-   - Copy the `my-elemental-module` folder to your Foundry VTT `modules` directory (`Data/modules/` in your Foundry VTT installation).
+Open a character sheet (e.g., a D&D 5e character).
+You should see a new "Elements" tab with the module's UI.
 
-3. **Enable the Module**:
+🖥️ Usage
+Accessing the Elements Tab
 
-   - Launch Foundry VTT, go to the "Add-on Modules" tab in the setup menu, and click "Install Module".
-   - Search for "My Elemental Module" and click "Install", or manually install by copying the module folder as described above.
-   - Once installed, go to your world’s "Manage Modules" settings and enable "My Elemental Module".
+Open a character sheet in Foundry VTT.
+Navigate to the "Elements" tab (look for the gem icon in the tab navigation).
 
-## Usage 🛠️
+Managing Elements
 
-1. **Open a Character Sheet**:
+Number of Elements: Use the "Number of Elements" input to set how many elements your character has (1–12). Click "Update" to apply changes.
+Assigning Features: Drag a feat item from your inventory or the items directory onto a node to assign it. The node's background will update to the item's image.
+Removing Features: Drag the feature off the node to remove it.
+Toggling Awakened/Dormant State: Double-click a node to toggle between awakened and dormant states. Dormant nodes are greyed out, non-editable, and cannot be rolled.
+Toggling Corruption: Right-click a node twice within 500ms to toggle corruption. Corrupted nodes display a dark overlay, animated cracks, and a pulsing red aura.
+Theme Color: Use the "Theme Color" picker to choose a color for the UI. This applies to nodes, text, borders, and chat messages.
 
-   - Create or open a D&D 5e character sheet in your Foundry VTT world.
+Rolling Elemental Dice
 
-2. **Navigate to the Elements Tab**:
+Click the name of an awakened element (e.g., "Fire") to roll a 1d6 plus the element's bonus (the value in the node's input field).
+The roll result appears in the chat with a custom template, styled with your selected theme color.
 
-   - You’ll see a new "Elements" tab with a gem icon in the character sheet.
+🎨 Visuals
 
-3. **Set Elemental Nodes**:
+Awakened Nodes: Bright and glowing with the theme color, fully interactable.
+Dormant Nodes: Greyed out with a dark overlay, non-editable, and non-rollable.
+Corrupted Nodes: Display a dark overlay, animated cracks, and a pulsing red aura, indicating corruption.
+Custom Chat Messages: Elemental dice rolls appear in the chat with a styled template, using the theme color for borders, text, and shadows.
 
-   - Enter a number between 1 and 12 in the "Number of Elements" input field.
-   - Click the "Update" button to visualize the nodes in a circular layout.
-   - The node count and active tab state are automatically saved and synced across all clients.
+🛠️ Development
+Prerequisites
 
-## Development Setup 💻
+Foundry VTT (tested with v10 and later).
+A D&D 5e system installed (though the module can be adapted for other systems).
 
-### Prerequisites
+Project Structure
+elemental-module/
+├── asset/ # Assets (e.g., images, sounds)
+├── src/ # Source code
+│ ├── core/ # Core logic
+│ │ ├── node-renderer.js # Handles node rendering and interactions
+│ │ ├── node-store.js # Manages persistent storage of node data
+│ ├── elements-tab/ # Elements tab UI logic
+│ │ ├── node-ui.js # Configures the Elements tab UI
+│ │ ├── tab-controller.js # Controls tab injection
+│ │ ├── tab-injector.js # Injects the tab into the sheet
+│ │ ├── tab-state.js # Manages tab state
+│ ├── hooks/ # Foundry VTT hooks
+│ ├── utils/ # Utility functions
+├── styles/ # CSS styles
+│ ├── sheet.css # Styles for the Elements tab and chat messages
+├── templates/ # Handlebars templates
+│ ├── elements-tab.hbs # Template for the Elements tab
+│ ├── elemental-roll.hbs # Template for custom roll chat messages
+├── **tests**/ # Unit tests
+├── module.json # Module manifest
+├── README.md # This file
 
-- **Node.js**: Ensure you have Node.js installed (version 18 or higher recommended).
-- **Foundry VTT**: Version 12 or higher.
-- **D&D 5e System**: Version 3.x or higher.
+Contributing
 
-### File Structure
+Fork the repository.
+Create a new branch for your feature (git checkout -b feature/your-feature).
+Make your changes and commit them (git commit -m "Add your feature").
+Push to your branch (git push origin feature/your-feature).
+Open a pull request with a description of your changes.
 
-- `src/bootstrap.js`: Entry point that initializes all hooks.
-- `src/`: Main source directory.
-  - `core/`: Core logic for node rendering and storage.
-    - `node-renderer.js`: Renders the node UI.
-    - `node-store.js`: Manages node count persistence.
-  - `elements-tab/`: Logic specific to the Elements tab.
-    - `tab-controller.js`: Orchestrates Elements tab logic.
-    - `tab-injector.js`: Injects the tab button and content.
-    - `tab-state.js`: Manages active tab state.
-    - `node-ui.js`: Sets up the node UI in the tab.
-  - `hooks/`: Hook setups.
-    - `init.js`: Handles the init hook.
-    - `render.js`: Handles the renderActorSheet5eCharacter hook.
-    - `update.js`: Handles the updateActor hook.
-    - `close.js`: Handles the closeActorSheet5eCharacter hook.
-  - `utils/`: General utilities.
-    - `debounce.js`: Debounce utility for preventing rapid re-renders.
-- `templates/`: Contains the Handlebars template for the Elements tab.
-- `styles/`: Contains the CSS for the Elements tab.
+Known Issues
 
-### Testing
+None at this time. If you encounter any bugs, please open an issue on GitHub!
 
-Unit tests are written using Jest to ensure the module’s reliability. To run the tests:
+📜 License
+This module is licensed under the MIT License. See the LICENSE file for details.
+🙏 Acknowledgments
 
-1. Install dependencies:
+Inspired by the Element System narrative power system.
+Built with love for the Foundry VTT community.
+Special thanks to the Foundry VTT team for providing an amazing platform.
 
-   ```bash
-   npm install
-   ```
-
-2. Run the tests:
-
-   ```bash
-   npm run test
-   ```
-
-3. Run tests in watch mode:
-
-   ```bash
-   npm run test:watch
-   ```
-
-4. View test coverage:
-
-   - After running `npm run test`, open `coverage/lcov-report/index.html` in a browser to view the coverage report.
-
-### Git Ignore
-
-A `.gitignore` file is included to exclude unnecessary files from version control, such as:
-
-- `node_modules/`: Node.js dependencies.
-- `coverage/`: Jest test coverage reports.
-- Editor/IDE files (e.g., `.vscode/`, `.idea/`).
-- System files (e.g., `.DS_Store`, `Thumbs.db`).
-
-Ensure this file is present in your repository to keep it clean.
-
-## Contributing 🤝
-
-Contributions are welcome! If you’d like to contribute to My Elemental Module, please follow these steps:
-
-1. **Fork the Repository**:
-
-   - Fork the repository on GitHub (or your preferred hosting platform).
-
-2. **Clone Your Fork**:
-
-   ```bash
-   git clone https://github.com/your-username/my-elemental-module.git
-   cd my-elemental-module
-   ```
-
-3. **Install Dependencies**:
-
-   ```bash
-   npm install
-   ```
-
-4. **Make Changes**:
-
-   - Create a new branch for your feature or bugfix:
-
-     ```bash
-     git checkout -b feature/your-feature-name
-     ```
-
-   - Make your changes and ensure tests pass:
-
-     ```bash
-     npm run test
-     ```
-
-5. **Commit and Push**:
-
-   ```bash
-   git add .
-   git commit -m "Add your feature or fix description"
-   git push origin feature/your-feature-name
-   ```
-
-6. **Create a Pull Request**:
-
-   - Open a pull request on GitHub, describing your changes and linking any related issues.
-
-## Roadmap 🗺️
-
-- **Element Types**: Allow players to assign specific element types (e.g., Fire, Water) to nodes.
-- **Drag-and-Drop UI**: Enable drag-and-drop functionality to rearrange nodes.
-- **Enhanced Visuals**: Add animations and custom styling options for the node UI.
-- **Additional Tabs**: Support for more custom tabs (e.g., Magic, Skills).
-
-## License 📜
-
-This project is licensed under the MIT License. See the LICENSE file for details.
-
-## Acknowledgments 🙏
-
-- **Foundry VTT Community**: For their amazing platform and support.
-- **Jest**: For providing a robust testing framework.
-- **D&D 5e System**: For the awesome system integration.
-
----
-
-**Happy Gaming!** 🎲
+Happy Roleplaying! 🎲✨

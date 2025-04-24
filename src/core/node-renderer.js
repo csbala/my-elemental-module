@@ -1,4 +1,4 @@
-import { getThemeColor } from "../core/node-store.js";
+import { getThemeColor, getNodeCorruptionStates, setNodeCorruptionState } from "../core/node-store.js";
 
 /**
  * Generates the node configuration with a dynamic theme color.
@@ -25,8 +25,7 @@ function getNodeConfig(themeColor) {
     },
     styles: {
       defaultNode: {
-        background:
-          "radial-gradient(circle at center, rgba(0, 255, 255, 0.2), transparent)",
+        background: "radial-gradient(circle at center, rgba(0, 255, 255, 0.2), transparent)",
         border: `4px solid ${themeColor}`,
         boxShadow: `0 0 20px ${themeColor}, 0 0 40px ${themeColor} inset`,
       },
@@ -73,8 +72,7 @@ function getNodeConfig(themeColor) {
 function generateVortexCircles(vortexCircles, themeColor) {
   if (!vortexCircles) return;
 
-  const { circleCount, minPos, posRange, maxSize, sizeStep } =
-    getNodeConfig(themeColor).vortex;
+  const { circleCount, minPos, posRange, maxSize, sizeStep } = getNodeConfig(themeColor).vortex;
   const circleStyles = [];
 
   for (let i = 0; i < circleCount; i++) {
@@ -123,12 +121,9 @@ function styleNodeWithFeature(node, featureId, app, config) {
   let featureName = "";
 
   if (featureId) {
-    const feature =
-      game.items.get(featureId) || app?.actor?.items.get(featureId);
+    const feature = game.items.get(featureId) || app?.actor?.items.get(featureId);
     if (feature && feature.img && feature.img !== "icons/svg/mystery-man.svg") {
-      console.log(
-        `Setting background for node with feature image: ${feature.img}`
-      );
+      console.log(`Setting background for node with feature image: ${feature.img}`);
       node.style.background = `url(${feature.img}) center center / cover no-repeat`;
       node.style.border = config.styles.featureNode.border;
       node.style.boxShadow = config.styles.featureNode.boxShadow;
@@ -161,7 +156,7 @@ function applyDefaultNodeStyles(node, config) {
 }
 
 /**
- * Updates an existing node's position, value, feature, and state.
+ * Updates an existing node's position, value, feature, state, and corruption.
  *
  * @param {HTMLElement} node - The node element to update.
  * @param {number} index - The index of the node.
@@ -169,21 +164,12 @@ function applyDefaultNodeStyles(node, config) {
  * @param {number} value - The node's value.
  * @param {string|null} featureId - The feature ID for the node.
  * @param {boolean} isAwakened - The node's state (true = awakened, false = dormant).
+ * @param {boolean} isCorrupted - The node's corruption state (true = corrupted, false = not corrupted).
  * @param {Object} app - The character sheet application.
  * @param {Object} callbacks - Callback functions for drag-and-drop and state toggle.
  * @param {Object} config - The node configuration.
  */
-function updateExistingNode(
-  node,
-  index,
-  position,
-  value,
-  featureId,
-  isAwakened,
-  app,
-  callbacks,
-  config
-) {
+function updateExistingNode(node, index, position, value, featureId, isAwakened, isCorrupted, app, callbacks, config) {
   node.style.left = `${position.x}px`;
   node.style.top = `${position.y}px`;
 
@@ -205,15 +191,9 @@ function updateExistingNode(
   nameElement.textContent = featureName;
 
   node.classList.toggle("node-dormant", !isAwakened);
+  node.classList.toggle("node-corrupted", isCorrupted);
 
-  attachNodeHandlers(
-    node,
-    index,
-    app,
-    callbacks.onFeatureDrop,
-    callbacks.onFeatureRemove,
-    callbacks.onStateToggle
-  );
+  attachNodeHandlers(node, index, app, callbacks.onFeatureDrop, callbacks.onFeatureRemove, callbacks.onStateToggle);
 }
 
 /**
@@ -224,21 +204,13 @@ function updateExistingNode(
  * @param {number} value - The node's value.
  * @param {string|null} featureId - The feature ID for the node.
  * @param {boolean} isAwakened - The node's state (true = awakened, false = dormant).
+ * @param {boolean} isCorrupted - The node's corruption state (true = corrupted, false = not corrupted).
  * @param {Object} app - The character sheet application.
  * @param {Object} callbacks - Callback functions for drag-and-drop and state toggle.
  * @param {Object} config - The node configuration.
  * @returns {HTMLElement} The created node element.
  */
-function createNewNode(
-  index,
-  position,
-  value,
-  featureId,
-  isAwakened,
-  app,
-  callbacks,
-  config
-) {
+function createNewNode(index, position, value, featureId, isAwakened, isCorrupted, app, callbacks, config) {
   const node = document.createElement("div");
   node.classList.add("circle", `node-${index + 1}`, "node-create");
 
@@ -251,6 +223,9 @@ function createNewNode(
 
   if (!isAwakened) {
     node.classList.add("node-dormant");
+  }
+  if (isCorrupted) {
+    node.classList.add("node-corrupted");
   }
 
   const input = document.createElement("input");
@@ -267,14 +242,7 @@ function createNewNode(
   node.appendChild(input);
   node.appendChild(nameElement);
 
-  attachNodeHandlers(
-    node,
-    index,
-    app,
-    callbacks.onFeatureDrop,
-    callbacks.onFeatureRemove,
-    callbacks.onStateToggle
-  );
+  attachNodeHandlers(node, index, app, callbacks.onFeatureDrop, callbacks.onFeatureRemove, callbacks.onStateToggle);
 
   return node;
 }
@@ -288,6 +256,7 @@ function createNewNode(
  * @param {number[]} nodeValues - The values for each node (default to 0 if not provided).
  * @param {string|null[]} nodeFeatures - The feature IDs for each node (null if no feature).
  * @param {boolean[]} nodeStates - The states for each node (true = awakened, false = dormant).
+ * @param {boolean[]} nodeCorruptedStates - The corruption states for each node (true = corrupted, false = not corrupted).
  * @param {number} previousNodeCount - The previous number of nodes for animation purposes.
  * @param {string} themeColor - The theme color in hex format.
  * @param {Object} options - Additional options.
@@ -296,20 +265,9 @@ function createNewNode(
  * @param {Function} options.onFeatureRemove - Callback when a feature is dragged out of a node.
  * @param {Function} options.onStateToggle - Callback when a node's state is toggled.
  */
-export function createTriangleNodes(
-  container,
-  nodeCount,
-  nodeValues = [],
-  nodeFeatures = [],
-  nodeStates = [],
-  previousNodeCount = 0,
-  themeColor,
-  { app, onFeatureDrop, onFeatureRemove, onStateToggle } = {}
-) {
+export function createTriangleNodes(container, nodeCount, nodeValues = [], nodeFeatures = [], nodeStates = [], nodeCorruptedStates = [], previousNodeCount = 0, themeColor, { app, onFeatureDrop, onFeatureRemove, onStateToggle } = {}) {
   const config = getNodeConfig(themeColor);
-  const existingNodes = Array.from(
-    container.querySelectorAll(".circle:not(.center)")
-  );
+  const existingNodes = Array.from(container.querySelectorAll(".circle:not(.center)"));
   const existingNodeCount = existingNodes.length;
 
   if (nodeCount < existingNodeCount) {
@@ -328,31 +286,12 @@ export function createTriangleNodes(
 
   const callbacks = { onFeatureDrop, onFeatureRemove, onStateToggle };
   for (let i = 0; i < Math.min(nodeCount, existingNodeCount); i++) {
-    updateExistingNode(
-      existingNodes[i],
-      i,
-      newPositions[i],
-      nodeValues[i],
-      nodeFeatures[i] || null,
-      nodeStates[i] || false,
-      app,
-      callbacks,
-      config
-    );
+    updateExistingNode(existingNodes[i], i, newPositions[i], nodeValues[i], nodeFeatures[i] || null, nodeStates[i] || false, nodeCorruptedStates[i] || false, app, callbacks, config);
   }
 
   if (nodeCount > existingNodeCount) {
     for (let i = existingNodeCount; i < nodeCount; i++) {
-      const newNode = createNewNode(
-        i,
-        newPositions[i],
-        nodeValues[i],
-        nodeFeatures[i] || null,
-        nodeStates[i] || false,
-        app,
-        callbacks,
-        config
-      );
+      const newNode = createNewNode(i, newPositions[i], nodeValues[i], nodeFeatures[i] || null, nodeStates[i] || false, nodeCorruptedStates[i] || false, app, callbacks, config);
       container.appendChild(newNode);
     }
   }
@@ -368,14 +307,11 @@ export function createTriangleNodes(
  * @param {Function} onFeatureRemove - Callback when a feature is dragged out of a node.
  * @param {Function} onStateToggle - Callback when a node's state is toggled.
  */
-function attachNodeHandlers(
-  node,
-  nodeIndex,
-  app,
-  onFeatureDrop,
-  onFeatureRemove,
-  onStateToggle
-) {
+function attachNodeHandlers(node, nodeIndex, app, onFeatureDrop, onFeatureRemove, onStateToggle) {
+  // Variables for double-right-click detection
+  let lastRightClickTime = 0;
+  const doubleClickThreshold = 500; // 500ms window for double right-click
+
   // Allow dropping items onto the node
   node.addEventListener("dragover", (event) => {
     event.preventDefault();
@@ -399,10 +335,7 @@ function attachNodeHandlers(
       return;
     }
 
-    const item =
-      (await fromUuid(data.uuid)) ||
-      game.items.get(data.id) ||
-      app?.actor?.items.get(data.id);
+    const item = (await fromUuid(data.uuid)) || game.items.get(data.id) || app?.actor?.items.get(data.id);
     if (!item) {
       console.log("Item not found:", data.id);
       return;
@@ -451,6 +384,23 @@ function attachNodeHandlers(
     await onStateToggle(nodeIndex, !isAwakened);
   });
 
+  // Add right-click handler to toggle corruption state with double right-click
+  node.addEventListener("contextmenu", async (event) => {
+    event.preventDefault(); // Prevent the default context menu
+
+    const currentTime = Date.now();
+    if (currentTime - lastRightClickTime <= doubleClickThreshold) {
+      // Double right-click detected
+      const isCorrupted = !node.classList.contains("node-corrupted");
+      node.classList.toggle("node-corrupted", isCorrupted);
+      await setNodeCorruptionState(app.actor, nodeIndex, isCorrupted);
+      console.log(`Toggled corruption state for node ${nodeIndex} to ${isCorrupted ? "corrupted" : "not corrupted"}`);
+      lastRightClickTime = 0; // Reset the timer
+    } else {
+      lastRightClickTime = currentTime;
+    }
+  });
+
   // Add click handler to the element name to roll 1d6 + bonus if awakened
   const nameElement = node.querySelector(".element-name");
   if (nameElement) {
@@ -466,21 +416,18 @@ function attachNodeHandlers(
 
       // Roll 1d6 + bonus
       const roll = new Roll(`1d6 + ${bonus}`);
-      await roll.evaluate(); // Remove async: true as it's deprecated and unnecessary
+      await roll.evaluate();
 
       // Fetch the theme color
       const themeColor = await getThemeColor(app.actor);
 
       // Render the custom chat message template
-      const chatContent = await renderTemplate(
-        "modules/my-elemental-module/templates/elemental-roll.hbs",
-        {
-          elementName: elementName,
-          rollFormula: `1d6 + ${bonus}`,
-          rollResult: roll.total,
-          themeColor: themeColor,
-        }
-      );
+      const chatContent = await renderTemplate("modules/my-elemental-module/templates/elemental-roll.hbs", {
+        elementName: elementName,
+        rollFormula: `1d6 + ${bonus}`,
+        rollResult: roll.total,
+        themeColor: themeColor,
+      });
 
       // Send the roll to chat with the custom template
       await ChatMessage.create({
@@ -488,9 +435,7 @@ function attachNodeHandlers(
         content: chatContent,
       });
 
-      console.log(
-        `Rolled 1d6 + ${bonus} for node ${nodeIndex} (${elementName}): ${roll.total}`
-      );
+      console.log(`Rolled 1d6 + ${bonus} for node ${nodeIndex} (${elementName}): ${roll.total}`);
     });
   }
 

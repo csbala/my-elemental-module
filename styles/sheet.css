@@ -8,11 +8,7 @@
 
 /* Gradient accent for the Update button */
 #updateNodesButton {
-  background: linear-gradient(
-    45deg,
-    var(--theme-color),
-    color-mix(in srgb, var(--theme-color) 80%, white)
-  );
+  background: linear-gradient(45deg, var(--theme-color), color-mix(in srgb, var(--theme-color) 80%, white));
   border: none;
   padding: 8px 16px;
   color: white;
@@ -30,11 +26,7 @@
 
 /* Hover effect for the Update button */
 #updateNodesButton:hover {
-  background: linear-gradient(
-    45deg,
-    color-mix(in srgb, var(--theme-color) 80%, white),
-    var(--theme-color)
-  );
+  background: linear-gradient(45deg, color-mix(in srgb, var(--theme-color) 80%, white), var(--theme-color));
   box-shadow: 0 0 15px var(--theme-color), 0 0 25px var(--theme-color);
   transform: scale(1.05);
 }
@@ -67,11 +59,7 @@
   border-radius: 50%;
   border: 4px solid var(--theme-color);
   box-shadow: 0 0 20px var(--theme-color), 0 0 40px var(--theme-color) inset;
-  background: radial-gradient(
-    circle at center,
-    color-mix(in srgb, var(--theme-color) 20%, transparent),
-    transparent
-  );
+  background: radial-gradient(circle at center, color-mix(in srgb, var(--theme-color) 20%, transparent), transparent);
   position: absolute;
 }
 
@@ -143,8 +131,7 @@
 
 /* Add transitions for position and size changes */
 .circle {
-  transition: left 0.5s ease, top 0.5s ease, width 0.5s ease, height 0.5s ease,
-    opacity 0.5s ease;
+  transition: left 0.5s ease, top 0.5s ease, width 0.5s ease, height 0.5s ease, opacity 0.5s ease;
 }
 
 /* Animation for node creation (growing from small to full size) */
@@ -198,7 +185,7 @@
   box-shadow: none !important;
 }
 
-/* Use a pseudo-element for the dark overlay */
+/* Use a pseudo-element for the dark overlay in dormant state */
 .node-dormant::after {
   content: "";
   position: absolute;
@@ -210,10 +197,71 @@
   border-radius: 50%;
 }
 
-/* Ensure the input field remains visible above the overlay */
-.circle input {
+/* Corrupted state: dark overlay with animated cracks and pulsing red aura */
+.node-corrupted {
   position: relative;
+  animation: pulse-corrupted 2s infinite ease-in-out;
+}
+
+/* Dark overlay for corrupted state */
+.node-corrupted::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  border-radius: 50%;
   z-index: 1;
+}
+
+/* Animated cracks for corrupted state */
+.node-corrupted::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M10 10 L30 50 L10 90 M30 50 L50 30 M30 50 L50 70 M50 30 L70 10 M50 70 L70 90 M70 10 L90 50 M70 90 L90 50' stroke='rgba(255, 0, 0, 0.5)' stroke-width='3' fill='none'/%3E%3C/svg%3E")
+    center center / cover;
+  border-radius: 50%;
+  z-index: 2;
+  animation: crack-flicker 1.5s infinite ease-in-out;
+}
+
+/* Pulsing red aura for corrupted state */
+@keyframes pulse-corrupted {
+  0% {
+    box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(255, 0, 0, 0.8);
+  }
+  100% {
+    box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+  }
+}
+
+/* Flickering effect for cracks */
+@keyframes crack-flicker {
+  0% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.6;
+  }
+}
+
+/* Ensure the input field and element name remain visible above the corrupted overlay */
+.circle input,
+.element-name {
+  position: relative;
+  z-index: 3;
   color: var(--theme-color); /* Use theme color in awakened state */
   text-shadow: 0 0 5px black;
 }

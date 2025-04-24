@@ -1,16 +1,5 @@
 import { createTriangleNodes } from "../core/node-renderer.js";
-import {
-  getNodeCount,
-  setNodeCount,
-  getNodeValues,
-  setNodeValue,
-  getNodeFeatures,
-  setNodeFeature,
-  getNodeStates,
-  setNodeState,
-  getThemeColor,
-  setThemeColor,
-} from "../core/node-store.js";
+import { getNodeCount, setNodeCount, getNodeValues, setNodeValue, getNodeFeatures, setNodeFeature, getNodeStates, setNodeState, getThemeColor, setThemeColor, getNodeCorruptionStates } from "../core/node-store.js";
 
 /**
  * Configuration for the node UI, centralizing constants and defaults.
@@ -40,12 +29,7 @@ const UI_CONFIG = {
  */
 function validateDomElements(mainCircle, input, button, colorPicker) {
   if (!mainCircle || !input || !button || !colorPicker) {
-    throw new Error("Missing required DOM elements", {
-      mainCircle,
-      input,
-      button,
-      colorPicker,
-    });
+    throw new Error("Missing required DOM elements", { mainCircle, input, button, colorPicker });
   }
 }
 
@@ -81,9 +65,7 @@ async function forceRender(app) {
  * @param {ActorSheet} app - The application rendering the sheet.
  */
 function attachNodeInputListeners(mainCircle, app) {
-  const nodeInputs = mainCircle.querySelectorAll(
-    ".circle input[type='number']"
-  );
+  const nodeInputs = mainCircle.querySelectorAll(".circle input[type='number']");
   nodeInputs.forEach((nodeInput) => {
     nodeInput.addEventListener("input", async (event) => {
       const nodeIndex = parseInt(event.target.dataset.nodeIndex, 10);
@@ -103,21 +85,15 @@ function attachNodeInputListeners(mainCircle, app) {
  */
 function createNodeCallbacks(app) {
   const onFeatureDrop = async (nodeIndex, item) => {
-    console.log(
-      `Dropping feature ${item.name} (ID: ${item.id}) onto node ${nodeIndex}`
-    );
+    console.log(`Dropping feature ${item.name} (ID: ${item.id}) onto node ${nodeIndex}`);
 
     const currentFeatures = await getNodeFeatures(app.actor);
     if (currentFeatures[nodeIndex]) {
       console.log(`Node ${nodeIndex} already has a feature. Replacing it.`);
-      await app.actor.deleteEmbeddedDocuments("Item", [
-        currentFeatures[nodeIndex],
-      ]);
+      await app.actor.deleteEmbeddedDocuments("Item", [currentFeatures[nodeIndex]]);
     }
 
-    const ownedItem = await app.actor.createEmbeddedDocuments("Item", [
-      item.toObject(),
-    ]);
+    const ownedItem = await app.actor.createEmbeddedDocuments("Item", [item.toObject()]);
     const featureId = ownedItem[0].id;
     console.log(`Feature added to character sheet with ID: ${featureId}`);
 
@@ -146,11 +122,7 @@ function createNodeCallbacks(app) {
   };
 
   const onStateToggle = async (nodeIndex, isAwakened) => {
-    console.log(
-      `Toggling state for node ${nodeIndex} to ${
-        isAwakened ? "awakened" : "dormant"
-      }`
-    );
+    console.log(`Toggling state for node ${nodeIndex} to ${isAwakened ? "awakened" : "dormant"}`);
     await setNodeState(app.actor, nodeIndex, isAwakened);
     await forceRender(app);
   };
@@ -177,30 +149,20 @@ function setupColorPicker(colorPicker, app) {
  *
  * @param {HTMLElement} button - The update button.
  * @param {HTMLElement} input - The input field for node count.
+ *jon-main-circle - The container for the nodes.
  * @param {HTMLElement} mainCircle - The container for the nodes.
  * @param {ActorSheet} app - The application rendering the sheet.
  * @param {Object} callbacks - The callback functions for node interactions.
  * @param {string} themeColor - The current theme color.
  */
-function setupUpdateButton(
-  button,
-  input,
-  mainCircle,
-  app,
-  callbacks,
-  themeColor
-) {
+function setupUpdateButton(button, input, mainCircle, app, callbacks, themeColor) {
   button.removeEventListener("click", button._updateHandler);
 
   button._updateHandler = async (event) => {
     event.preventDefault();
 
     const count = parseInt(input.value);
-    if (
-      Number.isNaN(count) ||
-      count < UI_CONFIG.nodeCount.min ||
-      count > UI_CONFIG.nodeCount.max
-    ) {
+    if (Number.isNaN(count) || count < UI_CONFIG.nodeCount.min || count > UI_CONFIG.nodeCount.max) {
       input.style.borderColor = themeColor;
       return;
     }
@@ -214,22 +176,11 @@ function setupUpdateButton(
     const updatedValues = await getNodeValues(app.actor);
     const updatedFeatures = await getNodeFeatures(app.actor);
     const updatedStates = await getNodeStates(app.actor);
+    const updatedCorruptedStates = await getNodeCorruptionStates(app.actor);
 
-    createTriangleNodes(
-      mainCircle,
-      count,
-      updatedValues,
-      updatedFeatures,
-      updatedStates,
-      previousCount,
-      themeColor,
-      { app, ...callbacks }
-    );
+    createTriangleNodes(mainCircle, count, updatedValues, updatedFeatures, updatedStates, updatedCorruptedStates, previousCount, themeColor, { app, ...callbacks });
 
-    Hooks.call("elementalCircleUpdated", {
-      container: mainCircle,
-      nodeCount: count,
-    });
+    Hooks.call("elementalCircleUpdated", { container: mainCircle, nodeCount: count });
 
     attachNodeInputListeners(mainCircle, app);
 
@@ -287,19 +238,18 @@ function applyThemeColor(mainCircle, input, themeColor) {
 export async function configureNodeUI(app, tabContent, tabs) {
   try {
     // Step 1: Retrieve DOM elements
-    const mainCircle = tabContent[0].querySelector(
-      ".elemental-circle-container"
-    );
+    const mainCircle = tabContent[0].querySelector(".elemental-circle-container");
     const input = tabContent[0].querySelector("#nodeCountInput");
     const button = tabContent[0].querySelector("#updateNodesButton");
     const colorPicker = tabContent[0].querySelector("#themeColorPicker");
     validateDomElements(mainCircle, input, button, colorPicker);
 
-    // Step 2: Load initial node data and theme color
+    // Step 2: Load initial node data, theme color, and corruption states
     const savedCount = await getNodeCount(app.actor);
     const nodeValues = await getNodeValues(app.actor);
     const nodeFeatures = await getNodeFeatures(app.actor);
     const nodeStates = await getNodeStates(app.actor);
+    const nodeCorruptedStates = await getNodeCorruptionStates(app.actor);
     const themeColor = await getThemeColor(app.actor);
 
     // Step 3: Setup the vortex layer
@@ -311,17 +261,8 @@ export async function configureNodeUI(app, tabContent, tabs) {
     // Step 5: Apply theme color to DOM
     applyThemeColor(mainCircle, input, themeColor);
 
-    // Step 6: Render initial nodes with theme color
-    createTriangleNodes(
-      mainCircle,
-      savedCount,
-      nodeValues,
-      nodeFeatures,
-      nodeStates,
-      savedCount,
-      themeColor,
-      { app, ...callbacks }
-    );
+    // Step 6: Render initial nodes with theme color and corruption states
+    createTriangleNodes(mainCircle, savedCount, nodeValues, nodeFeatures, nodeStates, nodeCorruptedStates, savedCount, themeColor, { app, ...callbacks });
     input.value = savedCount;
     colorPicker.value = themeColor;
 
