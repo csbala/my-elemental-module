@@ -1,5 +1,5 @@
 import { createTriangleNodes } from "../core/node-renderer.js";
-import { getNodeCount, setNodeCount, getNodeValues, setNodeValue, getNodeFeatures, setNodeFeature, getNodeStates, setNodeState, getThemeColor, setThemeColor, getNodeCorruptionStates } from "../core/node-store.js";
+import { getNodeCount, setNodeCount, getNodeValues, setNodeValue, getNodeFeatures, setNodeFeature, getNodeStates, setNodeState, getThemeColor, setThemeColor, getNodeCorruptionStates } from "../core/store/index.js";
 
 /**
  * Configuration for the node UI, centralizing constants and defaults.
