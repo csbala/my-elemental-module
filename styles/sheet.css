@@ -211,11 +211,24 @@
 }
 
 /* Ensure the input field remains visible above the overlay */
-.node-dormant input {
+.circle input {
   position: relative;
   z-index: 1;
-  color: #888;
+  color: var(--theme-color); /* Use theme color in awakened state */
+  text-shadow: 0 0 5px black;
+}
+
+/* Dormant state for input field */
+.node-dormant input {
+  color: #888; /* Greyed out in dormant state */
   text-shadow: none;
+  cursor: not-allowed;
+}
+
+/* Hover effect for input when node is awakened */
+.circle:not(.node-dormant) input:hover {
+  text-shadow: 0 0 10px var(--theme-color), 0 0 15px var(--theme-color);
+  transform: scale(1.05);
 }
 
 /* Style for the element name */

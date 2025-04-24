@@ -35,7 +35,6 @@ function getNodeConfig(themeColor) {
       input: {
         border: "none",
         background: "none",
-        color: "white",
         textAlign: "center",
         fontSize: "13px",
         padding: "0",
@@ -190,6 +189,7 @@ function updateExistingNode(
   if (input) {
     input.value = value ?? 0;
     input.dataset.nodeIndex = index;
+    input.disabled = !isAwakened; // Disable input if node is dormant
   }
 
   const featureName = styleNodeWithFeature(node, featureId, app, config);
@@ -256,6 +256,7 @@ function createNewNode(
   Object.assign(input.style, config.styles.input);
   input.value = value ?? 0;
   input.dataset.nodeIndex = index;
+  input.disabled = !isAwakened; // Disable input if node is dormant
 
   const nameElement = document.createElement("span");
   nameElement.classList.add("element-name");
@@ -362,7 +363,7 @@ export function createTriangleNodes(
  * @param {number} nodeIndex - The index of the node.
  * @param {Object} app - The character sheet application.
  * @param {Function} onFeatureDrop - Callback when a feature is dropped onto the node.
- * @param {Function} onFeatureRemove - Callback when a feature is dragged out of the node.
+ * @param {Function} onFeatureRemove - Callback when a feature is dragged out of a node.
  * @param {Function} onStateToggle - Callback when a node's state is toggled.
  */
 function attachNodeHandlers(
