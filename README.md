@@ -2,7 +2,7 @@
 
 ✨ **A narrative power system for D&D and beyond, brought to life in Foundry VTT!**
 
-The Elemental Module integrates the _Element System_—a metaphysical, narrative-driven power system—into Foundry VTT character sheets. It allows players to manage their character's elements, visually interact with them, and roll elemental dice, all while enhancing the storytelling experience with dynamic visuals and mechanics.
+The Elemental Module integrates the [_Element System_](https://docs.google.com/document/d/1YHqrxfUAKVTldjLAZ7jC0qrXbj3PEGgYy8a36KJ1AAg/edit?usp=sharing)—a metaphysical, narrative-driven power system—into Foundry VTT character sheets. It allows players to manage their character's elements, visually interact with them, and roll elemental dice, all while enhancing the storytelling experience with dynamic visuals and mechanics.
 
 ## 📖 Overview
 
