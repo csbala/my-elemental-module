@@ -364,7 +364,7 @@ export function createTriangleNodes(
  * @param {HTMLElement} node - The node element.
  * @param {number} nodeIndex - The index of the node.
  * @param {Object} app - The character sheet application.
- * @param {Function} onFeatureDrop - Callback when a feature is dropped onto the node.
+ * @param {Function} onFeatureDrop - Callback when a feature is dropped onto a node.
  * @param {Function} onFeatureRemove - Callback when a feature is dragged out of a node.
  * @param {Function} onStateToggle - Callback when a node's state is toggled.
  */
@@ -466,7 +466,7 @@ function attachNodeHandlers(
 
       // Roll 1d6 + bonus
       const roll = new Roll(`1d6 + ${bonus}`);
-      await roll.evaluate({ async: true });
+      await roll.evaluate(); // Remove async: true as it's deprecated and unnecessary
 
       // Fetch the theme color
       const themeColor = await getThemeColor(app.actor);
