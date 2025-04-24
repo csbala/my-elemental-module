@@ -289,3 +289,54 @@
     opacity: 0.6;
   }
 }
+
+/* Styles for the custom elemental roll chat message */
+.elemental-roll {
+  background: rgba(0, 0, 0, 0.8);
+  border: 2px solid var(--theme-color);
+  border-radius: 8px;
+  padding: 10px;
+  margin: 5px 0;
+  box-shadow: 0 0 10px var(--theme-color);
+  font-family: "Segoe UI", sans-serif;
+  color: #fff;
+}
+
+.elemental-roll .roll-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--theme-color);
+  padding-bottom: 5px;
+  margin-bottom: 10px;
+}
+
+.elemental-roll .roll-header h2 {
+  margin: 0;
+  font-size: 16px;
+  color: var(--theme-color);
+  text-shadow: 0 0 5px var(--theme-color);
+}
+
+.elemental-roll .roll-header .roll-type {
+  font-size: 12px;
+  font-style: italic;
+  color: #ccc;
+}
+
+.elemental-roll .roll-content {
+  text-align: center;
+}
+
+.elemental-roll .roll-formula {
+  font-size: 14px;
+  color: #ddd;
+  margin-bottom: 5px;
+}
+
+.elemental-roll .roll-result {
+  font-size: 24px;
+  font-weight: bold;
+  color: var(--theme-color);
+  text-shadow: 0 0 8px var(--theme-color);
+}

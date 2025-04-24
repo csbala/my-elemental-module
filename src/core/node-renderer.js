@@ -1,3 +1,5 @@
+import { getThemeColor } from "../core/node-store.js";
+
 /**
  * Generates the node configuration with a dynamic theme color.
  *
@@ -466,10 +468,24 @@ function attachNodeHandlers(
       const roll = new Roll(`1d6 + ${bonus}`);
       await roll.evaluate({ async: true });
 
-      // Send the roll to chat
-      await roll.toMessage({
+      // Fetch the theme color
+      const themeColor = await getThemeColor(app.actor);
+
+      // Render the custom chat message template
+      const chatContent = await renderTemplate(
+        "modules/my-elemental-module/templates/elemental-roll.hbs",
+        {
+          elementName: elementName,
+          rollFormula: `1d6 + ${bonus}`,
+          rollResult: roll.total,
+          themeColor: themeColor,
+        }
+      );
+
+      // Send the roll to chat with the custom template
+      await ChatMessage.create({
         speaker: ChatMessage.getSpeaker({ actor: app.actor }),
-        flavor: `Rolling ${elementName} (Elemental Bonus)`,
+        content: chatContent,
       });
 
       console.log(
