@@ -2,12 +2,13 @@
  * Configuration for the node store, centralizing constants and defaults.
  */
 const STORE_CONFIG = {
-  moduleName: "my-elemental-module", // Module identifier for Foundry flags
+  moduleName: "my-elemental-module",
   defaults: {
-    nodeCount: 3, // Default number of nodes
-    nodeValue: 0, // Default value for nodes
-    nodeFeature: null, // Default feature ID for nodes
-    nodeState: false, // Default state (false = dormant)
+    nodeCount: 3,
+    nodeValue: 0,
+    nodeFeature: null,
+    nodeState: false,
+    themeColor: "#00ffff", // Default theme color (cyan)
   },
 };
 
@@ -195,4 +196,30 @@ export async function setNodeState(actor, nodeIndex, isAwakened) {
   const states = await getNodeStates(actor);
   states[nodeIndex] = isAwakened;
   await setFlag(actor, "nodeStates", states);
+}
+
+/**
+ * Retrieve the stored theme color for a specific actor.
+ *
+ * @param {Actor5e} actor - The Foundry VTT actor object.
+ * @returns {Promise<string>} The theme color in hex format (e.g., "#00ffff").
+ */
+export async function getThemeColor(actor) {
+  return await getFlag(actor, "themeColor", STORE_CONFIG.defaults.themeColor);
+}
+
+/**
+ * Set or update the theme color for a specific actor.
+ *
+ * @param {Actor5e} actor - The Foundry VTT actor object.
+ * @param {string} color - The color in hex format (e.g., "#00ffff").
+ * @returns {Promise<void>}
+ */
+export async function setThemeColor(actor, color) {
+  if (!/^#[0-9A-F]{6}$/i.test(color)) {
+    throw new Error(
+      `Invalid color: ${color}. Must be a hex color (e.g., "#00ffff")`
+    );
+  }
+  await setFlag(actor, "themeColor", color);
 }

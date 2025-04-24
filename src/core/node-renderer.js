@@ -1,80 +1,86 @@
 /**
- * Configuration object for the node renderer, centralizing constants and styles.
+ * Generates the node configuration with a dynamic theme color.
+ *
+ * @param {string} themeColor - The theme color in hex format.
+ * @returns {Object} The node configuration.
  */
-const NODE_CONFIG = {
-  layout: {
-    centerX: 200, // Center X position of the circular layout
-    centerY: 200, // Center Y position of the circular layout
-    radius: 180, // Radius of the circular layout
-  },
-  vortex: {
-    circleCount: 25, // Number of spinning circles in the vortex layer
-    minPos: 35, // Minimum position percentage for vortex circles (40% to 55%)
-    posRange: 25, // Range of position variation
-    maxSize: 170, // Maximum circle size in pixels
-    sizeStep: 3, // Size decrease per circle
-  },
-  animation: {
-    durationMs: 500, // Duration of node creation/removal animations
-  },
-  styles: {
-    defaultNode: {
-      background:
-        "radial-gradient(circle at center, rgba(0, 255, 255, 0.2), transparent)",
-      border: "4px solid #00ffff",
-      boxShadow: "0 0 20px #00ffff, 0 0 40px #00ffff inset",
+function getNodeConfig(themeColor) {
+  return {
+    layout: {
+      centerX: 200,
+      centerY: 200,
+      radius: 180,
     },
-    featureNode: {
-      border: "none",
-      boxShadow: "0 0 20px #00ffff",
+    vortex: {
+      circleCount: 25,
+      minPos: 35,
+      posRange: 25,
+      maxSize: 170,
+      sizeStep: 3,
     },
-    input: {
-      border: "none",
-      background: "none",
-      color: "white",
-      textAlign: "center",
-      fontSize: "13px",
-      padding: "0",
-      outline: "none",
-      width: "30px",
-      height: "30px",
-      fontWeight: "bold",
-      fontFamily: "Arial, sans-serif",
-      pointerEvents: "auto",
-      textShadow: "0 0 5px black",
-      transition: "border-color 0.3s",
+    animation: {
+      durationMs: 500,
     },
-    node: {
-      width: "160px",
-      height: "160px",
-      borderRadius: "50%",
-      position: "absolute",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      flexDirection: "column",
-      transform: "translate(-50%, -50%)",
+    styles: {
+      defaultNode: {
+        background:
+          "radial-gradient(circle at center, rgba(0, 255, 255, 0.2), transparent)",
+        border: `4px solid ${themeColor}`,
+        boxShadow: `0 0 20px ${themeColor}, 0 0 40px ${themeColor} inset`,
+      },
+      featureNode: {
+        border: "none",
+        boxShadow: `0 0 20px ${themeColor}`,
+      },
+      input: {
+        border: "none",
+        background: "none",
+        color: "white",
+        textAlign: "center",
+        fontSize: "13px",
+        padding: "0",
+        outline: "none",
+        width: "30px",
+        height: "30px",
+        fontWeight: "bold",
+        fontFamily: "Arial, sans-serif",
+        pointerEvents: "auto",
+        textShadow: "0 0 5px black",
+        transition: "border-color 0.3s",
+      },
+      node: {
+        width: "160px",
+        height: "160px",
+        borderRadius: "50%",
+        position: "absolute",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        flexDirection: "column",
+        transform: "translate(-50%, -50%)",
+      },
     },
-  },
-};
+  };
+}
 
 /**
  * Generates the spinning circles effect for the vortex-circles layer.
  *
  * @param {HTMLElement} vortexCircles - The vortex-circles DOM element.
+ * @param {string} themeColor - The theme color in hex format.
  */
-function generateVortexCircles(vortexCircles) {
+function generateVortexCircles(vortexCircles, themeColor) {
   if (!vortexCircles) return;
 
   const { circleCount, minPos, posRange, maxSize, sizeStep } =
-    NODE_CONFIG.vortex;
+    getNodeConfig(themeColor).vortex;
   const circleStyles = [];
 
   for (let i = 0; i < circleCount; i++) {
     const posX = minPos + Math.random() * posRange;
     const posY = minPos + Math.random() * posRange;
     const size = maxSize - i * sizeStep;
-    const gradient = `radial-gradient(circle at ${posX}% ${posY}%, transparent 0, transparent 20px, rgba(0, 255, 255, 0.13) ${size}px, transparent 22px)`;
+    const gradient = `radial-gradient(circle at ${posX}% ${posY}%, transparent 0, transparent 20px, ${themeColor}33 ${size}px, transparent 22px)`;
     circleStyles.push(gradient);
   }
 
@@ -85,10 +91,11 @@ function generateVortexCircles(vortexCircles) {
  * Calculates the positions of nodes in a circular layout.
  *
  * @param {number} nodeCount - The number of nodes to position.
+ * @param {Object} config - The node configuration.
  * @returns {Array<{x: number, y: number}>} Array of position objects.
  */
-function calculateNodePositions(nodeCount) {
-  const { centerX, centerY, radius } = NODE_CONFIG.layout;
+function calculateNodePositions(nodeCount, config) {
+  const { centerX, centerY, radius } = config.layout;
   const positions = [];
 
   for (let i = 0; i < nodeCount; i++) {
@@ -108,9 +115,10 @@ function calculateNodePositions(nodeCount) {
  * @param {HTMLElement} node - The node element to style.
  * @param {string|null} featureId - The ID of the feature associated with the node.
  * @param {Object} app - The character sheet application.
+ * @param {Object} config - The node configuration.
  * @returns {string} The feature name, or empty string if no feature.
  */
-function styleNodeWithFeature(node, featureId, app) {
+function styleNodeWithFeature(node, featureId, app, config) {
   let featureName = "";
 
   if (featureId) {
@@ -121,17 +129,17 @@ function styleNodeWithFeature(node, featureId, app) {
         `Setting background for node with feature image: ${feature.img}`
       );
       node.style.background = `url(${feature.img}) center center / cover no-repeat`;
-      node.style.border = NODE_CONFIG.styles.featureNode.border;
-      node.style.boxShadow = NODE_CONFIG.styles.featureNode.boxShadow;
+      node.style.border = config.styles.featureNode.border;
+      node.style.boxShadow = config.styles.featureNode.boxShadow;
       node.dataset.featureId = featureId;
       featureName = feature.name || "";
     } else {
       console.log(`Feature ${featureId} not found or has default image`);
-      applyDefaultNodeStyles(node);
+      applyDefaultNodeStyles(node, config);
       delete node.dataset.featureId;
     }
   } else {
-    applyDefaultNodeStyles(node);
+    applyDefaultNodeStyles(node, config);
     delete node.dataset.featureId;
   }
 
@@ -142,9 +150,10 @@ function styleNodeWithFeature(node, featureId, app) {
  * Applies default styles to a node when no feature is assigned.
  *
  * @param {HTMLElement} node - The node element to style.
+ * @param {Object} config - The node configuration.
  */
-function applyDefaultNodeStyles(node) {
-  const { background, border, boxShadow } = NODE_CONFIG.styles.defaultNode;
+function applyDefaultNodeStyles(node, config) {
+  const { background, border, boxShadow } = config.styles.defaultNode;
   node.style.background = background;
   node.style.border = border;
   node.style.boxShadow = boxShadow;
@@ -161,6 +170,7 @@ function applyDefaultNodeStyles(node) {
  * @param {boolean} isAwakened - The node's state (true = awakened, false = dormant).
  * @param {Object} app - The character sheet application.
  * @param {Object} callbacks - Callback functions for drag-and-drop and state toggle.
+ * @param {Object} config - The node configuration.
  */
 function updateExistingNode(
   node,
@@ -170,23 +180,20 @@ function updateExistingNode(
   featureId,
   isAwakened,
   app,
-  callbacks
+  callbacks,
+  config
 ) {
-  // Update position
   node.style.left = `${position.x}px`;
   node.style.top = `${position.y}px`;
 
-  // Update input value
   const input = node.querySelector("input");
   if (input) {
     input.value = value ?? 0;
     input.dataset.nodeIndex = index;
   }
 
-  // Update feature and style
-  const featureName = styleNodeWithFeature(node, featureId, app);
+  const featureName = styleNodeWithFeature(node, featureId, app, config);
 
-  // Update element name
   let nameElement = node.querySelector(".element-name");
   if (!nameElement) {
     nameElement = document.createElement("span");
@@ -195,10 +202,8 @@ function updateExistingNode(
   }
   nameElement.textContent = featureName;
 
-  // Update state
   node.classList.toggle("node-dormant", !isAwakened);
 
-  // Re-attach event handlers
   attachNodeHandlers(
     node,
     index,
@@ -219,6 +224,7 @@ function updateExistingNode(
  * @param {boolean} isAwakened - The node's state (true = awakened, false = dormant).
  * @param {Object} app - The character sheet application.
  * @param {Object} callbacks - Callback functions for drag-and-drop and state toggle.
+ * @param {Object} config - The node configuration.
  * @returns {HTMLElement} The created node element.
  */
 function createNewNode(
@@ -228,42 +234,36 @@ function createNewNode(
   featureId,
   isAwakened,
   app,
-  callbacks
+  callbacks,
+  config
 ) {
   const node = document.createElement("div");
   node.classList.add("circle", `node-${index + 1}`, "node-create");
 
-  // Apply base styles
-  Object.assign(node.style, NODE_CONFIG.styles.node, {
+  Object.assign(node.style, config.styles.node, {
     left: `${position.x}px`,
     top: `${position.y}px`,
   });
 
-  // Apply feature and style
-  const featureName = styleNodeWithFeature(node, featureId, app);
+  const featureName = styleNodeWithFeature(node, featureId, app, config);
 
-  // Set state
   if (!isAwakened) {
     node.classList.add("node-dormant");
   }
 
-  // Create input field
   const input = document.createElement("input");
   input.type = "number";
-  Object.assign(input.style, NODE_CONFIG.styles.input);
+  Object.assign(input.style, config.styles.input);
   input.value = value ?? 0;
   input.dataset.nodeIndex = index;
 
-  // Create element name display
   const nameElement = document.createElement("span");
   nameElement.classList.add("element-name");
   nameElement.textContent = featureName;
 
-  // Append children
   node.appendChild(input);
   node.appendChild(nameElement);
 
-  // Attach event handlers
   attachNodeHandlers(
     node,
     index,
@@ -286,6 +286,7 @@ function createNewNode(
  * @param {string|null[]} nodeFeatures - The feature IDs for each node (null if no feature).
  * @param {boolean[]} nodeStates - The states for each node (true = awakened, false = dormant).
  * @param {number} previousNodeCount - The previous number of nodes for animation purposes.
+ * @param {string} themeColor - The theme color in hex format.
  * @param {Object} options - Additional options.
  * @param {Object} options.app - The character sheet application.
  * @param {Function} options.onFeatureDrop - Callback when a feature is dropped onto a node.
@@ -299,32 +300,29 @@ export function createTriangleNodes(
   nodeFeatures = [],
   nodeStates = [],
   previousNodeCount = 0,
+  themeColor,
   { app, onFeatureDrop, onFeatureRemove, onStateToggle } = {}
 ) {
-  // Step 1: Get existing nodes
+  const config = getNodeConfig(themeColor);
   const existingNodes = Array.from(
     container.querySelectorAll(".circle:not(.center)")
   );
   const existingNodeCount = existingNodes.length;
 
-  // Step 2: Animate removal of excess nodes
   if (nodeCount < existingNodeCount) {
     for (let i = nodeCount; i < existingNodeCount; i++) {
       existingNodes[i].classList.add("node-remove");
     }
     setTimeout(() => {
       existingNodes.slice(nodeCount).forEach((node) => node.remove());
-    }, NODE_CONFIG.animation.durationMs);
+    }, config.animation.durationMs);
   }
 
-  // Step 3: Generate vortex circles
   const vortexCircles = container.querySelector(".vortex-circles");
-  generateVortexCircles(vortexCircles);
+  generateVortexCircles(vortexCircles, themeColor);
 
-  // Step 4: Calculate new positions for all nodes
-  const newPositions = calculateNodePositions(nodeCount);
+  const newPositions = calculateNodePositions(nodeCount, config);
 
-  // Step 5: Update existing nodes
   const callbacks = { onFeatureDrop, onFeatureRemove, onStateToggle };
   for (let i = 0; i < Math.min(nodeCount, existingNodeCount); i++) {
     updateExistingNode(
@@ -335,11 +333,11 @@ export function createTriangleNodes(
       nodeFeatures[i] || null,
       nodeStates[i] || false,
       app,
-      callbacks
+      callbacks,
+      config
     );
   }
 
-  // Step 6: Create new nodes if needed
   if (nodeCount > existingNodeCount) {
     for (let i = existingNodeCount; i < nodeCount; i++) {
       const newNode = createNewNode(
@@ -349,7 +347,8 @@ export function createTriangleNodes(
         nodeFeatures[i] || null,
         nodeStates[i] || false,
         app,
-        callbacks
+        callbacks,
+        config
       );
       container.appendChild(newNode);
     }
@@ -374,7 +373,6 @@ function attachNodeHandlers(
   onFeatureRemove,
   onStateToggle
 ) {
-  // Allow dropping items onto the node
   node.addEventListener("dragover", (event) => {
     event.preventDefault();
     event.dataTransfer.dropEffect = "move";
@@ -413,7 +411,6 @@ function attachNodeHandlers(
     await onFeatureDrop(nodeIndex, item);
   });
 
-  // Allow dragging features out of the node
   node.addEventListener("dragstart", (event) => {
     const featureId = node.dataset.featureId;
     if (!featureId) {
@@ -433,13 +430,11 @@ function attachNodeHandlers(
     );
     event.dataTransfer.effectAllowed = "move";
 
-    // Notify the removal after drag
     setTimeout(async () => {
       await onFeatureRemove(nodeIndex);
     }, 0);
   });
 
-  // Add double-click handler to toggle awakened/dormant state
   node.addEventListener("dblclick", async () => {
     const isAwakened = !node.classList.contains("node-dormant");
     if (isAwakened) {
@@ -450,6 +445,5 @@ function attachNodeHandlers(
     await onStateToggle(nodeIndex, !isAwakened);
   });
 
-  // Make the node draggable if it has a feature
   node.draggable = !!node.dataset.featureId;
 }

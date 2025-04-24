@@ -8,6 +8,8 @@ import {
   setNodeFeature,
   getNodeStates,
   setNodeState,
+  getThemeColor,
+  setThemeColor,
 } from "../core/node-store.js";
 
 /**
@@ -20,10 +22,6 @@ const UI_CONFIG = {
     max: 12,
   },
   styles: {
-    input: {
-      validBorder: "#00ffff",
-      invalidBorder: "red",
-    },
     button: {
       loadingText: "Updating...",
       defaultText: "Update",
@@ -37,14 +35,16 @@ const UI_CONFIG = {
  * @param {HTMLElement} mainCircle - The container for the nodes.
  * @param {HTMLElement} input - The input field for node count.
  * @param {HTMLElement} button - The update button.
+ * @param {HTMLElement} colorPicker - The color picker input.
  * @throws {Error} If any required element is missing.
  */
-function validateDomElements(mainCircle, input, button) {
-  if (!mainCircle || !input || !button) {
+function validateDomElements(mainCircle, input, button, colorPicker) {
+  if (!mainCircle || !input || !button || !colorPicker) {
     throw new Error("Missing required DOM elements", {
       mainCircle,
       input,
       button,
+      colorPicker,
     });
   }
 }
@@ -107,7 +107,6 @@ function createNodeCallbacks(app) {
       `Dropping feature ${item.name} (ID: ${item.id}) onto node ${nodeIndex}`
     );
 
-    // Remove existing feature if present
     const currentFeatures = await getNodeFeatures(app.actor);
     if (currentFeatures[nodeIndex]) {
       console.log(`Node ${nodeIndex} already has a feature. Replacing it.`);
@@ -116,14 +115,12 @@ function createNodeCallbacks(app) {
       ]);
     }
 
-    // Add the feature to the character sheet
     const ownedItem = await app.actor.createEmbeddedDocuments("Item", [
       item.toObject(),
     ]);
     const featureId = ownedItem[0].id;
     console.log(`Feature added to character sheet with ID: ${featureId}`);
 
-    // Update the node's feature ID
     await setNodeFeature(app.actor, nodeIndex, featureId);
     console.log(`Feature ID ${featureId} set for node ${nodeIndex}`);
 
@@ -139,11 +136,9 @@ function createNodeCallbacks(app) {
       return;
     }
 
-    // Remove the feature from the character sheet
     await app.actor.deleteEmbeddedDocuments("Item", [featureId]);
     console.log(`Feature ${featureId} removed from character sheet.`);
 
-    // Clear the feature from the node
     await setNodeFeature(app.actor, nodeIndex, null);
     console.log(`Feature cleared from node ${nodeIndex}`);
 
@@ -164,6 +159,20 @@ function createNodeCallbacks(app) {
 }
 
 /**
+ * Sets up the color picker's change handler.
+ *
+ * @param {HTMLElement} colorPicker - The color picker input.
+ * @param {ActorSheet} app - The application rendering the sheet.
+ */
+function setupColorPicker(colorPicker, app) {
+  colorPicker.addEventListener("change", async (event) => {
+    const newColor = event.target.value;
+    await setThemeColor(app.actor, newColor);
+    await forceRender(app);
+  });
+}
+
+/**
  * Sets up the update button's click handler.
  *
  * @param {HTMLElement} button - The update button.
@@ -171,9 +180,16 @@ function createNodeCallbacks(app) {
  * @param {HTMLElement} mainCircle - The container for the nodes.
  * @param {ActorSheet} app - The application rendering the sheet.
  * @param {Object} callbacks - The callback functions for node interactions.
+ * @param {string} themeColor - The current theme color.
  */
-function setupUpdateButton(button, input, mainCircle, app, callbacks) {
-  // Remove any existing listener
+function setupUpdateButton(
+  button,
+  input,
+  mainCircle,
+  app,
+  callbacks,
+  themeColor
+) {
   button.removeEventListener("click", button._updateHandler);
 
   button._updateHandler = async (event) => {
@@ -185,12 +201,11 @@ function setupUpdateButton(button, input, mainCircle, app, callbacks) {
       count < UI_CONFIG.nodeCount.min ||
       count > UI_CONFIG.nodeCount.max
     ) {
-      input.style.borderColor = UI_CONFIG.styles.input.invalidBorder;
+      input.style.borderColor = themeColor;
       return;
     }
-    input.style.borderColor = UI_CONFIG.styles.input.validBorder;
+    input.style.borderColor = themeColor;
 
-    // Show loading state
     button.disabled = true;
     button.innerHTML = UI_CONFIG.styles.button.loadingText;
 
@@ -207,6 +222,7 @@ function setupUpdateButton(button, input, mainCircle, app, callbacks) {
       updatedFeatures,
       updatedStates,
       previousCount,
+      themeColor,
       { app, ...callbacks }
     );
 
@@ -215,13 +231,10 @@ function setupUpdateButton(button, input, mainCircle, app, callbacks) {
       nodeCount: count,
     });
 
-    // Re-attach event listeners to new input fields
     attachNodeInputListeners(mainCircle, app);
 
-    // Force re-render
     await forceRender(app);
 
-    // Reset button state
     button.disabled = false;
     button.innerHTML = UI_CONFIG.styles.button.defaultText;
   };
@@ -253,6 +266,18 @@ function setupTabHandlers(tabs, app) {
 }
 
 /**
+ * Applies the theme color to the DOM elements.
+ *
+ * @param {HTMLElement} mainCircle - The container for the nodes.
+ * @param {HTMLElement} input - The input field for node count.
+ * @param {string} themeColor - The theme color in hex format.
+ */
+function applyThemeColor(mainCircle, input, themeColor) {
+  mainCircle.style.setProperty("--theme-color", themeColor);
+  input.style.borderColor = themeColor;
+}
+
+/**
  * Configures the node UI (circle, input, button) in the Elements tab.
  *
  * @param {ActorSheet} app - The application rendering the sheet.
@@ -267,13 +292,15 @@ export async function configureNodeUI(app, tabContent, tabs) {
     );
     const input = tabContent[0].querySelector("#nodeCountInput");
     const button = tabContent[0].querySelector("#updateNodesButton");
-    validateDomElements(mainCircle, input, button);
+    const colorPicker = tabContent[0].querySelector("#themeColorPicker");
+    validateDomElements(mainCircle, input, button, colorPicker);
 
-    // Step 2: Load initial node data
+    // Step 2: Load initial node data and theme color
     const savedCount = await getNodeCount(app.actor);
     const nodeValues = await getNodeValues(app.actor);
     const nodeFeatures = await getNodeFeatures(app.actor);
     const nodeStates = await getNodeStates(app.actor);
+    const themeColor = await getThemeColor(app.actor);
 
     // Step 3: Setup the vortex layer
     setupVortexLayer(mainCircle);
@@ -281,7 +308,10 @@ export async function configureNodeUI(app, tabContent, tabs) {
     // Step 4: Create node interaction callbacks
     const callbacks = createNodeCallbacks(app);
 
-    // Step 5: Render initial nodes
+    // Step 5: Apply theme color to DOM
+    applyThemeColor(mainCircle, input, themeColor);
+
+    // Step 6: Render initial nodes with theme color
     createTriangleNodes(
       mainCircle,
       savedCount,
@@ -289,13 +319,16 @@ export async function configureNodeUI(app, tabContent, tabs) {
       nodeFeatures,
       nodeStates,
       savedCount,
+      themeColor,
       { app, ...callbacks }
     );
     input.value = savedCount;
+    colorPicker.value = themeColor;
 
-    // Step 6: Attach event listeners
+    // Step 7: Attach event listeners
     attachNodeInputListeners(mainCircle, app);
-    setupUpdateButton(button, input, mainCircle, app, callbacks);
+    setupUpdateButton(button, input, mainCircle, app, callbacks, themeColor);
+    setupColorPicker(colorPicker, app);
     setupTabHandlers(tabs, app);
   } catch (error) {
     console.error("Failed to configure node UI:", error);
