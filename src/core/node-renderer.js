@@ -298,7 +298,7 @@ export function createTriangleNodes(container, nodeCount, nodeValues = [], nodeF
 }
 
 /**
- * Attaches drag-and-drop, double-click, and element name click event listeners to a node.
+ * Attaches drag-and-drop, double-click, element name click, and hover event listeners to a node.
  *
  * @param {HTMLElement} node - The node element.
  * @param {number} nodeIndex - The index of the node.
@@ -311,6 +311,20 @@ function attachNodeHandlers(node, nodeIndex, app, onFeatureDrop, onFeatureRemove
   // Variables for double-right-click detection
   let lastRightClickTime = 0;
   const doubleClickThreshold = 500; // 500ms window for double right-click
+  let hoverPad = null;
+  let hoverTimeout = null;
+
+  // Function to remove the hover pad
+  const removeHoverPad = () => {
+    if (hoverPad) {
+      hoverPad.remove();
+      hoverPad = null;
+    }
+    if (hoverTimeout) {
+      clearTimeout(hoverTimeout);
+      hoverTimeout = null;
+    }
+  };
 
   // Allow dropping items onto the node
   node.addEventListener("dragover", (event) => {
@@ -375,6 +389,7 @@ function attachNodeHandlers(node, nodeIndex, app, onFeatureDrop, onFeatureRemove
 
   // Add double-click handler to toggle awakened/dormant state
   node.addEventListener("dblclick", async () => {
+    removeHoverPad(); // Remove the hover pad on double-click
     const isAwakened = !node.classList.contains("node-dormant");
     if (isAwakened) {
       node.classList.add("node-dormant");
@@ -391,6 +406,7 @@ function attachNodeHandlers(node, nodeIndex, app, onFeatureDrop, onFeatureRemove
     const currentTime = Date.now();
     if (currentTime - lastRightClickTime <= doubleClickThreshold) {
       // Double right-click detected
+      removeHoverPad(); // Remove the hover pad on double-right-click
       const isCorrupted = !node.classList.contains("node-corrupted");
       node.classList.toggle("node-corrupted", isCorrupted);
       await setNodeCorruptionState(app.actor, nodeIndex, isCorrupted);
@@ -438,6 +454,72 @@ function attachNodeHandlers(node, nodeIndex, app, onFeatureDrop, onFeatureRemove
       console.log(`Rolled 1d6 + ${bonus} for node ${nodeIndex} (${elementName}): ${roll.total}`);
     });
   }
+
+  // Add hover handler to display the node information pad
+  node.addEventListener("mouseover", async (event) => {
+    // Remove any existing hover pad
+    removeHoverPad();
+
+    // Delay the hover pad appearance to prevent flickering
+    hoverTimeout = setTimeout(async () => {
+      // Get the node's information
+      const featureId = node.dataset.featureId;
+      const elementName = nameElement.textContent || "Unknown Element";
+      const isAwakened = !node.classList.contains("node-dormant");
+      const isCorrupted = node.classList.contains("node-corrupted");
+      let state = isAwakened ? "Awakened" : "Dormant";
+      if (isCorrupted) {
+        state += " (Corrupted)";
+      }
+
+      let featSummary = "No feat linked.";
+      let description = "No description available.";
+      if (featureId) {
+        const feat = game.items.get(featureId) || app?.actor?.items.get(featureId);
+        if (feat) {
+          featSummary = feat.name || "Unknown Feat";
+          description = feat.system?.description?.value || "No description available.";
+          // Strip HTML tags from description for display
+          description = description.replace(/<[^>]+>/g, "");
+          // Truncate description if too long
+          if (description.length > 100) {
+            description = description.substring(0, 97) + "...";
+          }
+        }
+      }
+
+      // Create the hover pad
+      hoverPad = document.createElement("div");
+      hoverPad.classList.add("node-hover-pad");
+      if (!isAwakened) {
+        hoverPad.classList.add("node-dormant");
+      }
+      if (isCorrupted) {
+        hoverPad.classList.add("node-corrupted");
+      }
+      hoverPad.style.setProperty("--theme-color", await getThemeColor(app.actor));
+      hoverPad.innerHTML = `
+        <div class="hover-pad-header">${elementName}</div>
+        <div class="hover-pad-content">
+          <p><strong>Description:</strong> ${description}</p>
+          <p><strong>Feat:</strong> ${featSummary}</p>
+          <p><strong>State:</strong> ${state}</p>
+        </div>
+      `;
+
+      // Position the hover pad to the right of the node
+      const rect = node.getBoundingClientRect();
+      hoverPad.style.position = "absolute";
+      hoverPad.style.left = `${rect.right + 10}px`;
+      hoverPad.style.top = `${rect.top}px`;
+      document.body.appendChild(hoverPad);
+    }, 200); // 200ms delay to prevent flickering
+  });
+
+  // Remove the hover pad when the mouse leaves the node
+  node.addEventListener("mouseout", () => {
+    removeHoverPad();
+  });
 
   // Make the node draggable if it has a feature
   node.draggable = !!node.dataset.featureId;

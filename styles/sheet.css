@@ -388,3 +388,137 @@
   color: var(--theme-color);
   text-shadow: 0 0 8px var(--theme-color);
 }
+
+/* Styles for the node hover pad */
+.node-hover-pad {
+  background: rgba(0, 0, 0, 0.9);
+  border: 2px solid var(--theme-color);
+  border-radius: 8px;
+  padding: 10px;
+  width: 200px;
+  box-shadow: 0 0 5px var(--theme-color), 0 0 10px var(--theme-color) inset; /* Reduced glow intensity */
+  color: #fff;
+  font-family: "Segoe UI", sans-serif;
+  animation: shimmer 1.5s infinite ease-in-out;
+  z-index: 1000;
+  position: relative;
+  overflow: hidden; /* Ensure neon lines don't overflow */
+}
+
+/* Digital animation background with marching neon lines */
+.node-hover-pad::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent 0%, transparent 40%, var(--theme-color) 50%, transparent 60%, transparent 100%);
+  background-size: 200% 100%;
+  opacity: 0.3;
+  z-index: 1;
+  animation: march-neon 3s infinite linear;
+}
+
+/* Animation for marching neon lines */
+@keyframes march-neon {
+  0% {
+    background-position: 0% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.node-hover-pad .hover-pad-header {
+  font-size: 14px;
+  font-weight: bold;
+  color: var(--theme-color);
+  text-shadow: 0 0 5px var(--theme-color);
+  border-bottom: 1px solid var(--theme-color);
+  padding-bottom: 5px;
+  margin-bottom: 10px;
+}
+
+.node-hover-pad .hover-pad-content {
+  font-size: 12px;
+}
+
+.node-hover-pad .hover-pad-content p {
+  margin: 5px 0;
+}
+
+.node-hover-pad .hover-pad-content strong {
+  color: var(--theme-color);
+}
+
+/* Shimmer effect for awakened state with reduced intensity */
+@keyframes shimmer {
+  0% {
+    box-shadow: 0 0 5px var(--theme-color);
+  }
+  50% {
+    box-shadow: 0 0 10px var(--theme-color), 0 0 15px var(--theme-color) inset;
+  }
+  100% {
+    box-shadow: 0 0 5px var(--theme-color);
+  }
+}
+
+/* Dormant state for hover pad */
+.node-hover-pad.node-dormant {
+  background: rgba(0, 0, 0, 0.5);
+  border: 2px solid #333;
+  box-shadow: none;
+  animation: none;
+}
+
+.node-hover-pad.node-dormant::before {
+  display: none; /* Disable neon lines in dormant state */
+}
+
+.node-hover-pad.node-dormant .hover-pad-header {
+  color: #888;
+  text-shadow: none;
+  border-bottom: 1px solid #333;
+}
+
+.node-hover-pad.node-dormant .hover-pad-content strong {
+  color: #888;
+}
+
+/* Corrupted state for hover pad */
+.node-hover-pad.node-corrupted {
+  position: relative;
+  animation: pulse-corrupted 2s infinite ease-in-out;
+}
+
+.node-hover-pad.node-corrupted::before {
+  /* Keep the neon lines visible in corrupted state */
+  z-index: 1;
+}
+
+.node-hover-pad.node-corrupted::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M10 10 L30 50 L10 90 M30 50 L50 30 M30 50 L50 70 M50 30 L70 10 M50 70 L70 90 M70 10 L90 50 M70 90 L90 50' stroke='rgba(255, 0, 0, 0.5)' stroke-width='3' fill='none'/%3E%3C/svg%3E")
+    center center / cover;
+  border-radius: 8px;
+  z-index: 2;
+  animation: crack-flicker 1.5s infinite ease-in-out;
+}
+
+.node-hover-pad.node-corrupted::after {
+  z-index: 2;
+}
+
+/* Ensure hover pad content remains visible above corruption overlay and neon lines */
+.node-hover-pad .hover-pad-header,
+.node-hover-pad .hover-pad-content {
+  position: relative;
+  z-index: 3;
+}

@@ -1,0 +1,22 @@
+<div class="elemental-datapad {{stateClass}}" style="--theme-color: {{themeColor}}">
+  <h3>{{elementName}}</h3>
+  {{#if description}}
+    <p class="description">{{description}}</p>
+  {{else}}
+    <p class="description">No description available.</p>
+  {{/if}}
+  <div class="feat-summary">
+    <strong>Linked Feat:</strong>
+    {{#if featName}}
+      {{featName}}
+      -
+      {{featDescription}}
+    {{else}}
+      None
+    {{/if}}
+  </div>
+  <div class="state">
+    <strong>State:</strong>
+    {{stateText}}
+  </div>
+</div>
