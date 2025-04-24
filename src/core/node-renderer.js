@@ -360,6 +360,7 @@ function attachNodeHandlers(node, nodeIndex, app, onFeatureDrop, onFeatureRemove
     }
 
     await onFeatureDrop(nodeIndex, item);
+    removeHoverPad(); // Remove the hover pad after dropping a feature
   });
 
   // Allow dragging features out of the node
@@ -381,6 +382,9 @@ function attachNodeHandlers(node, nodeIndex, app, onFeatureDrop, onFeatureRemove
       })
     );
     event.dataTransfer.effectAllowed = "move";
+
+    // Remove the hover pad when dragging out
+    removeHoverPad();
 
     setTimeout(async () => {
       await onFeatureRemove(nodeIndex);
@@ -457,13 +461,19 @@ function attachNodeHandlers(node, nodeIndex, app, onFeatureDrop, onFeatureRemove
 
   // Add hover handler to display the node information pad
   node.addEventListener("mouseover", async (event) => {
+    // Only show the hover pad if a feature is linked
+    const featureId = node.dataset.featureId;
+    if (!featureId) {
+      console.log(`No feature linked to node ${nodeIndex}, skipping hover pad.`);
+      return;
+    }
+
     // Remove any existing hover pad
     removeHoverPad();
 
     // Delay the hover pad appearance to prevent flickering
     hoverTimeout = setTimeout(async () => {
       // Get the node's information
-      const featureId = node.dataset.featureId;
       const elementName = nameElement.textContent || "Unknown Element";
       const isAwakened = !node.classList.contains("node-dormant");
       const isCorrupted = node.classList.contains("node-corrupted");
