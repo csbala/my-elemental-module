@@ -356,7 +356,7 @@ export function createTriangleNodes(
 }
 
 /**
- * Attaches drag-and-drop and double-click event listeners to a node.
+ * Attaches drag-and-drop, double-click, and element name click event listeners to a node.
  *
  * @param {HTMLElement} node - The node element.
  * @param {number} nodeIndex - The index of the node.
@@ -373,6 +373,7 @@ function attachNodeHandlers(
   onFeatureRemove,
   onStateToggle
 ) {
+  // Allow dropping items onto the node
   node.addEventListener("dragover", (event) => {
     event.preventDefault();
     event.dataTransfer.dropEffect = "move";
@@ -411,6 +412,7 @@ function attachNodeHandlers(
     await onFeatureDrop(nodeIndex, item);
   });
 
+  // Allow dragging features out of the node
   node.addEventListener("dragstart", (event) => {
     const featureId = node.dataset.featureId;
     if (!featureId) {
@@ -435,6 +437,7 @@ function attachNodeHandlers(
     }, 0);
   });
 
+  // Add double-click handler to toggle awakened/dormant state
   node.addEventListener("dblclick", async () => {
     const isAwakened = !node.classList.contains("node-dormant");
     if (isAwakened) {
@@ -445,5 +448,35 @@ function attachNodeHandlers(
     await onStateToggle(nodeIndex, !isAwakened);
   });
 
+  // Add click handler to the element name to roll 1d6 + bonus if awakened
+  const nameElement = node.querySelector(".element-name");
+  if (nameElement) {
+    nameElement.addEventListener("click", async () => {
+      if (node.classList.contains("node-dormant")) {
+        console.log(`Cannot roll for node ${nodeIndex}: Element is dormant`);
+        return;
+      }
+
+      const input = node.querySelector("input");
+      const bonus = parseInt(input.value, 10) || 0;
+      const elementName = nameElement.textContent || "Element";
+
+      // Roll 1d6 + bonus
+      const roll = new Roll(`1d6 + ${bonus}`);
+      await roll.evaluate({ async: true });
+
+      // Send the roll to chat
+      await roll.toMessage({
+        speaker: ChatMessage.getSpeaker({ actor: app.actor }),
+        flavor: `Rolling ${elementName} (Elemental Bonus)`,
+      });
+
+      console.log(
+        `Rolled 1d6 + ${bonus} for node ${nodeIndex} (${elementName}): ${roll.total}`
+      );
+    });
+  }
+
+  // Make the node draggable if it has a feature
   node.draggable = !!node.dataset.featureId;
 }
