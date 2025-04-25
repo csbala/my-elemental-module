@@ -125,9 +125,17 @@ function createNodeCallbacks(app) {
       featureId = item.id;
     }
 
+    // Log the current state of the Features tab
+    const featuresTabItems = app.actor.items.filter((i) => i.type === "feat").map((i) => ({ id: i.id, name: i.name }));
+    console.log(`Features tab contents after drop (before setting feature):`, featuresTabItems);
+
     // Update the node's feature ID without adding to Features tab
     await setNodeFeature(app.actor, nodeIndex, featureId);
     console.log(`Feature ID ${featureId} set for node ${nodeIndex}`);
+
+    // Log the Features tab again to confirm no addition
+    const updatedFeaturesTabItems = app.actor.items.filter((i) => i.type === "feat").map((i) => ({ id: i.id, name: i.name }));
+    console.log(`Features tab contents after drop (after setting feature):`, updatedFeaturesTabItems);
 
     await forceRender(app);
   };
@@ -142,22 +150,55 @@ function createNodeCallbacks(app) {
       return;
     }
 
-    // Find the feature on the character sheet and delete it
-    const feature = app.actor.items.get(featureId);
+    // Log the current state of the Features tab
+    const featuresTabItems = app.actor.items.filter((i) => i.type === "feat").map((i) => ({ id: i.id, name: i.name }));
+    console.log(`Features tab contents before removal:`, featuresTabItems);
+
+    // Try to find the feature by its ID
+    let feature = app.actor.items.get(featureId);
+    let featureName = "Unknown";
+
     if (feature) {
+      featureName = feature.name;
       try {
         await app.actor.deleteEmbeddedDocuments("Item", [featureId]);
-        console.log(`Feature ${featureId} successfully removed from character sheet.`);
+        console.log(`Feature ${featureId} (Name: ${featureName}) successfully removed from character sheet by ID.`);
+        ui.notifications.info(`Removed feature "${featureName}" from character sheet.`);
       } catch (error) {
-        console.error(`Failed to remove feature ${featureId} from character sheet:`, error);
+        console.error(`Failed to remove feature ${featureId} (Name: ${featureName}) from character sheet by ID:`, error);
+        ui.notifications.error(`Failed to remove feature from character sheet: ${error.message}`);
       }
     } else {
-      console.log(`Feature ${featureId} not found on character sheet, skipping deletion.`);
+      console.log(`Feature ${featureId} not found on character sheet by ID, attempting to find by name...`);
+      // If the feature isn't found by ID, try to find it by name
+      const featToRemove = game.items.get(featureId) || app.actor.items.find((i) => i.id === featureId);
+      if (featToRemove) {
+        featureName = featToRemove.name;
+        const matchingFeature = app.actor.items.find((i) => i.name === featToRemove.name && i.type === "feat");
+        if (matchingFeature) {
+          try {
+            await app.actor.deleteEmbeddedDocuments("Item", [matchingFeature.id]);
+            console.log(`Feature ${matchingFeature.id} (Name: ${featureName}) successfully removed from character sheet by name.`);
+            ui.notifications.info(`Removed feature "${featureName}" from character sheet.`);
+          } catch (error) {
+            console.error(`Failed to remove feature ${matchingFeature.id} (Name: ${featureName}) from character sheet by name:`, error);
+            ui.notifications.error(`Failed to remove feature from character sheet: ${error.message}`);
+          }
+        } else {
+          console.log(`No feature with name ${featureName} found on character sheet.`);
+        }
+      } else {
+        console.log(`Could not retrieve feature details for ID ${featureId} to match by name.`);
+      }
     }
 
     // Clear the feature from the node
     await setNodeFeature(app.actor, nodeIndex, null);
     console.log(`Feature cleared from node ${nodeIndex}`);
+
+    // Log the Features tab again to confirm removal
+    const updatedFeaturesTabItems = app.actor.items.filter((i) => i.type === "feat").map((i) => ({ id: i.id, name: i.name }));
+    console.log(`Features tab contents after removal:`, updatedFeaturesTabItems);
 
     await forceRender(app);
   };
