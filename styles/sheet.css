@@ -523,3 +523,115 @@
   position: relative;
   z-index: 3;
 }
+
+/* Styles for the Element rules info bubble */
+.element-rules-info {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2; /* Above vortex-circles but below nodes */
+}
+
+.element-rules-info .info-icon {
+  display: block;
+  color: var(--theme-color);
+  font-size: 20px;
+  font-family: "Segoe UI", sans-serif;
+  font-weight: bold;
+  text-shadow: 0 0 5px var(--theme-color);
+  opacity: 0.5;
+  animation: pulse-icon 2s infinite ease-in-out;
+  cursor: pointer;
+  transition: opacity 0.3s ease;
+}
+
+.element-rules-info .info-icon:hover {
+  opacity: 1;
+}
+
+/* Pulsing animation for the info icon */
+@keyframes pulse-icon {
+  0% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 0.5;
+  }
+}
+
+.element-rules-info .info-tooltip {
+  display: none;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.85);
+  border: 2px solid var(--theme-color);
+  border-radius: 8px;
+  padding: 15px;
+  width: 300px;
+  color: #fff;
+  font-family: "Segoe UI", sans-serif;
+  z-index: 1001; /* Above everything else */
+  box-shadow: 0 0 10px var(--theme-color), 0 0 20px var(--theme-color) inset;
+  animation: hologram-appear 0.5s ease forwards, hologram-flicker 2s infinite ease-in-out;
+  opacity: 0;
+}
+
+/* Holographic appearance animation */
+@keyframes hologram-appear {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.8);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+/* Holographic flicker animation */
+@keyframes hologram-flicker {
+  0% {
+    opacity: 1;
+  }
+  2% {
+    opacity: 0.7;
+  }
+  4% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.element-rules-info:hover .info-tooltip {
+  display: block;
+}
+
+.element-rules-info .info-tooltip h4 {
+  margin: 0 0 10px 0;
+  font-size: 16px;
+  color: var(--theme-color);
+  text-shadow: 0 0 5px var(--theme-color);
+  text-align: center;
+}
+
+.element-rules-info .info-tooltip ul {
+  margin: 0;
+  padding: 0 0 0 15px;
+  font-size: 12px;
+}
+
+.element-rules-info .info-tooltip li {
+  margin-bottom: 5px;
+}
+
+.element-rules-info .info-tooltip strong {
+  color: var(--theme-color);
+}

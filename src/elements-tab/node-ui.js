@@ -330,6 +330,7 @@ export async function configureNodeUI(app, tabContent, tabs) {
     const input = tabContent[0].querySelector("#nodeCountInput");
     const button = tabContent[0].querySelector("#updateNodesButton");
     const colorPicker = tabContent[0].querySelector("#themeColorPicker");
+    const rulesInfo = tabContent[0].querySelector("#element-rules-info");
     validateDomElements(mainCircle, input, button, colorPicker);
 
     // Step 2: Load initial node data, theme color, and corruption states
@@ -341,21 +342,28 @@ export async function configureNodeUI(app, tabContent, tabs) {
     const themeColor = await getThemeColor(app.actor);
     console.log(`Loaded node data - Count: ${savedCount}, Values: ${nodeValues}, Features: ${nodeFeatures}, States: ${nodeStates}, Corrupted States: ${nodeCorruptedStates}, Theme Color: ${themeColor}`);
 
-    // Step 3: Setup the vortex layer
+    // Step 3: Check if any Elements are awakened and toggle the rules info bubble
+    const hasAwakenedElement = nodeStates.some((state) => state === true);
+    if (rulesInfo) {
+      rulesInfo.style.display = hasAwakenedElement ? "block" : "none";
+      console.log(`Rules info bubble ${hasAwakenedElement ? "shown" : "hidden"} - Has awakened element: ${hasAwakenedElement}`);
+    }
+
+    // Step 4: Setup the vortex layer
     setupVortexLayer(mainCircle);
 
-    // Step 4: Create node interaction callbacks
+    // Step 5: Create node interaction callbacks
     const callbacks = createNodeCallbacks(app);
 
-    // Step 5: Apply theme color to DOM
+    // Step 6: Apply theme color to DOM
     applyThemeColor(mainCircle, input, themeColor);
 
-    // Step 6: Render initial nodes with theme color and corruption states
+    // Step 7: Render initial nodes with theme color and corruption states
     createTriangleNodes(mainCircle, savedCount, nodeValues, nodeFeatures, nodeStates, nodeCorruptedStates, savedCount, themeColor, { app, ...callbacks });
     input.value = savedCount;
     colorPicker.value = themeColor;
 
-    // Step 7: Attach event listeners
+    // Step 8: Attach event listeners
     attachNodeInputListeners(mainCircle, app);
     setupUpdateButton(button, input, mainCircle, app, callbacks, themeColor);
     setupColorPicker(colorPicker, app);
