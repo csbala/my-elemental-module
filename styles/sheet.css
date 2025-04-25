@@ -4,6 +4,10 @@
   height: 385px;
   margin: 100px auto 0 auto;
   --theme-color: var(--theme-color); /* Default theme color */
+  /* Ensure the container maintains a 1:1 aspect ratio */
+  min-width: 385px;
+  min-height: 385px;
+  aspect-ratio: Winter 1 / 1;
 }
 
 /* Gradient accent for the Update button */
@@ -320,6 +324,8 @@
   z-index: 0.5;
   clip-path: circle(48% at 50% 50%);
   animation: spin-circles 20s linear infinite;
+  /* Ensure the element maintains a square shape */
+  aspect-ratio: 1 / 1;
 }
 
 /* Keyframes for the spinning circles with pulsing effect */
