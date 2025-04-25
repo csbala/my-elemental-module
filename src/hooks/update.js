@@ -5,9 +5,7 @@ export function setupUpdateHook() {
   Hooks.on("updateActor", async (actor, updateData, options, userId) => {
     const sheet = actor.sheet;
     if (sheet && sheet.rendered) {
-      console.log(
-        "Actor updated, forcing re-render to preserve Elements tab..."
-      );
+      console.log(`Actor updated, forcing re-render to preserve Elements tab for ${actor.type} sheet: ${actor.name}`);
       await sheet.render();
     }
   });
