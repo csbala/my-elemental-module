@@ -1,9 +1,9 @@
 .elemental-circle-container {
   position: relative;
-  width: 400px;
-  height: 400px;
+  width: 385px;
+  height: 385px;
   margin: 100px auto 0 auto;
-  --theme-color: #00ffff; /* Default theme color */
+  --theme-color: var(--theme-color); /* Default theme color */
 }
 
 /* Gradient accent for the Update button */
@@ -511,9 +511,8 @@
   font-family: "Segoe UI", sans-serif;
   font-weight: bold;
   text-shadow: 0 0 5px var(--theme-color);
-  opacity: 0.5;
+  opacity: 0.4;
   animation: pulse-icon 2s infinite ease-in-out;
-  cursor: pointer;
   transition: opacity 0.3s ease;
 }
 

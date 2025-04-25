@@ -9,13 +9,13 @@ import { getThemeColor, getNodeCorruptionStates, setNodeCorruptionState } from "
 function getNodeConfig(themeColor) {
   return {
     layout: {
-      centerX: 200,
-      centerY: 200,
-      radius: 180,
+      centerX: 191,
+      centerY: 193,
+      radius: 188,
     },
     vortex: {
-      circleCount: 25,
-      minPos: 35,
+      circleCount: 20,
+      minPos: 40,
       posRange: 25,
       maxSize: 170,
       sizeStep: 3,
