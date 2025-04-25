@@ -85,18 +85,30 @@ function attachNodeInputListeners(mainCircle, app) {
  */
 function createNodeCallbacks(app) {
   const onFeatureDrop = async (nodeIndex, item) => {
-    console.log(`Dropping feature ${item.name} (ID: ${item.id}) onto node ${nodeIndex}`);
+    console.log(`🔽 Dropping feature ${item.name} (ID: ${item.id}) onto node ${nodeIndex}`);
 
     // Remove existing feature if present
     const currentFeatures = await getNodeFeatures(app.actor);
+    console.log(`Current features on actor:`, currentFeatures);
     if (currentFeatures[nodeIndex]) {
-      console.log(`Node ${nodeIndex} already has a feature. Replacing it.`);
-      await app.actor.deleteEmbeddedDocuments("Item", [currentFeatures[nodeIndex]]);
+      console.log(`Node ${nodeIndex} already has a feature with ID: ${currentFeatures[nodeIndex]}. Replacing it.`);
+      const existingFeature = app.actor.items.get(currentFeatures[nodeIndex]);
+      if (existingFeature) {
+        try {
+          await app.actor.deleteEmbeddedDocuments("Item", [currentFeatures[nodeIndex]]);
+          console.log(`Successfully deleted existing feature ${currentFeatures[nodeIndex]} from character sheet.`);
+        } catch (error) {
+          console.error(`Failed to delete existing feature ${currentFeatures[nodeIndex]} from character sheet:`, error);
+        }
+      } else {
+        console.log(`Existing feature ${currentFeatures[nodeIndex]} not found on character sheet, skipping deletion.`);
+      }
     }
 
     // Check if the item already exists on the character sheet
     let featureId = item.id;
     const existingItem = app.actor.items.find((i) => i.id === item.id || (i.name === item.name && i.type === item.type));
+    console.log(`Checking for existing item on character sheet:`, existingItem);
 
     if (existingItem) {
       // Item already exists on the character sheet, use its ID
@@ -106,7 +118,6 @@ function createNodeCallbacks(app) {
       // Item is owned by another actor; create a copy but don't add to Features tab
       console.log("Item is owned by another actor. Creating a copy without adding to Features tab.");
       const itemData = item.toObject();
-      // We'll store the feature ID in the node without embedding it
       featureId = itemData._id;
     } else {
       // Item is unowned (e.g., from the Items Directory); use its ID directly
@@ -122,17 +133,27 @@ function createNodeCallbacks(app) {
   };
 
   const onFeatureRemove = async (nodeIndex) => {
-    console.log(`Removing feature from node ${nodeIndex}`);
+    console.log(`🔼 Removing feature from node ${nodeIndex}`);
     const features = await getNodeFeatures(app.actor);
+    console.log(`Current features on actor:`, features);
     const featureId = features[nodeIndex];
     if (!featureId) {
       console.log(`No feature to remove from node ${nodeIndex}`);
       return;
     }
 
-    // Remove the feature from the character sheet
-    await app.actor.deleteEmbeddedDocuments("Item", [featureId]);
-    console.log(`Feature ${featureId} removed from character sheet.`);
+    // Find the feature on the character sheet and delete it
+    const feature = app.actor.items.get(featureId);
+    if (feature) {
+      try {
+        await app.actor.deleteEmbeddedDocuments("Item", [featureId]);
+        console.log(`Feature ${featureId} successfully removed from character sheet.`);
+      } catch (error) {
+        console.error(`Failed to remove feature ${featureId} from character sheet:`, error);
+      }
+    } else {
+      console.log(`Feature ${featureId} not found on character sheet, skipping deletion.`);
+    }
 
     // Clear the feature from the node
     await setNodeFeature(app.actor, nodeIndex, null);
@@ -142,8 +163,9 @@ function createNodeCallbacks(app) {
   };
 
   const onStateToggle = async (nodeIndex, isAwakened) => {
-    console.log(`Toggling state for node ${nodeIndex} to ${isAwakened ? "awakened" : "dormant"}`);
+    console.log(`🔄 Toggling state for node ${nodeIndex} to ${isAwakened ? "awakened" : "dormant"}`);
     await setNodeState(app.actor, nodeIndex, isAwakened);
+    console.log(`Node ${nodeIndex} state updated to ${isAwakened ? "awakened" : "dormant"}`);
     await forceRender(app);
   };
 
@@ -160,6 +182,7 @@ function setupColorPicker(colorPicker, app) {
   colorPicker.addEventListener("change", async (event) => {
     const newColor = event.target.value;
     await setThemeColor(app.actor, newColor);
+    console.log(`Theme color updated to ${newColor}`);
     await forceRender(app);
   });
 }
@@ -183,6 +206,7 @@ function setupUpdateButton(button, input, mainCircle, app, callbacks, themeColor
     const count = parseInt(input.value);
     if (Number.isNaN(count) || count < UI_CONFIG.nodeCount.min || count > UI_CONFIG.nodeCount.max) {
       input.style.borderColor = themeColor;
+      console.log(`Invalid node count: ${count}. Must be between ${UI_CONFIG.nodeCount.min} and ${UI_CONFIG.nodeCount.max}`);
       return;
     }
     input.style.borderColor = themeColor;
@@ -207,6 +231,7 @@ function setupUpdateButton(button, input, mainCircle, app, callbacks, themeColor
 
     button.disabled = false;
     button.innerHTML = UI_CONFIG.styles.button.defaultText;
+    console.log(`Updated node count to ${count}`);
   };
 
   button.addEventListener("click", button._updateHandler);
@@ -224,6 +249,7 @@ function setupTabHandlers(tabs, app) {
     .off("click.tabState")
     .on("click.tabState", async () => {
       await app.actor.setFlag(UI_CONFIG.moduleName, "activeTab", "elements");
+      console.log("Tab state set to 'elements'");
     });
 
   tabs
@@ -232,6 +258,7 @@ function setupTabHandlers(tabs, app) {
     .on("click.tabState", async (event) => {
       const tab = $(event.currentTarget).attr("data-tab");
       await app.actor.setFlag(UI_CONFIG.moduleName, "activeTab", tab);
+      console.log(`Tab state set to '${tab}'`);
     });
 }
 
@@ -245,6 +272,7 @@ function setupTabHandlers(tabs, app) {
 function applyThemeColor(mainCircle, input, themeColor) {
   mainCircle.style.setProperty("--theme-color", themeColor);
   input.style.borderColor = themeColor;
+  console.log(`Applied theme color: ${themeColor}`);
 }
 
 /**
@@ -270,6 +298,7 @@ export async function configureNodeUI(app, tabContent, tabs) {
     const nodeStates = await getNodeStates(app.actor);
     const nodeCorruptedStates = await getNodeCorruptionStates(app.actor);
     const themeColor = await getThemeColor(app.actor);
+    console.log(`Loaded node data - Count: ${savedCount}, Values: ${nodeValues}, Features: ${nodeFeatures}, States: ${nodeStates}, Corrupted States: ${nodeCorruptedStates}, Theme Color: ${themeColor}`);
 
     // Step 3: Setup the vortex layer
     setupVortexLayer(mainCircle);
@@ -290,6 +319,7 @@ export async function configureNodeUI(app, tabContent, tabs) {
     setupUpdateButton(button, input, mainCircle, app, callbacks, themeColor);
     setupColorPicker(colorPicker, app);
     setupTabHandlers(tabs, app);
+    console.log("Node UI configured successfully");
   } catch (error) {
     console.error("Failed to configure node UI:", error);
   }

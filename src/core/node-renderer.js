@@ -84,6 +84,7 @@ function generateVortexCircles(vortexCircles, themeColor) {
   }
 
   vortexCircles.style.background = circleStyles.join(",");
+  console.log(`Generated vortex circles with theme color: ${themeColor}`);
 }
 
 /**
@@ -105,6 +106,7 @@ function calculateNodePositions(nodeCount, config) {
     positions.push({ x, y });
   }
 
+  console.log(`Calculated positions for ${nodeCount} nodes:`, positions);
   return positions;
 }
 
@@ -139,6 +141,7 @@ function styleNodeWithFeature(node, featureId, app, config) {
     delete node.dataset.featureId;
   }
 
+  console.log(`Styled node with feature ID ${featureId}, name: ${featureName}`);
   return featureName;
 }
 
@@ -153,6 +156,7 @@ function applyDefaultNodeStyles(node, config) {
   node.style.background = background;
   node.style.border = border;
   node.style.boxShadow = boxShadow;
+  console.log(`Applied default styles to node:`, { background, border, boxShadow });
 }
 
 /**
@@ -194,6 +198,7 @@ function updateExistingNode(node, index, position, value, featureId, isAwakened,
   node.classList.toggle("node-corrupted", isCorrupted);
 
   attachNodeHandlers(node, index, app, callbacks.onFeatureDrop, callbacks.onFeatureRemove, callbacks.onStateToggle);
+  console.log(`Updated node ${index}: Position (${position.x}, ${position.y}), Value: ${value}, Feature: ${featureId}, Awakened: ${isAwakened}, Corrupted: ${isCorrupted}`);
 }
 
 /**
@@ -244,6 +249,7 @@ function createNewNode(index, position, value, featureId, isAwakened, isCorrupte
 
   attachNodeHandlers(node, index, app, callbacks.onFeatureDrop, callbacks.onFeatureRemove, callbacks.onStateToggle);
 
+  console.log(`Created new node ${index}: Position (${position.x}, ${position.y}), Value: ${value}, Feature: ${featureId}, Awakened: ${isAwakened}, Corrupted: ${isCorrupted}`);
   return node;
 }
 
@@ -277,6 +283,7 @@ export function createTriangleNodes(container, nodeCount, nodeValues = [], nodeF
     setTimeout(() => {
       existingNodes.slice(nodeCount).forEach((node) => node.remove());
     }, config.animation.durationMs);
+    console.log(`Removed ${existingNodeCount - nodeCount} excess nodes.`);
   }
 
   const vortexCircles = container.querySelector(".vortex-circles");
@@ -295,6 +302,8 @@ export function createTriangleNodes(container, nodeCount, nodeValues = [], nodeF
       container.appendChild(newNode);
     }
   }
+
+  console.log(`Created/Updated ${nodeCount} nodes with theme color: ${themeColor}`);
 }
 
 /**
@@ -319,6 +328,7 @@ function attachNodeHandlers(node, nodeIndex, app, onFeatureDrop, onFeatureRemove
     if (hoverPad) {
       hoverPad.remove();
       hoverPad = null;
+      console.log(`Removed hover pad for node ${nodeIndex}`);
     }
     if (hoverTimeout) {
       clearTimeout(hoverTimeout);
@@ -361,6 +371,7 @@ function attachNodeHandlers(node, nodeIndex, app, onFeatureDrop, onFeatureRemove
 
     await onFeatureDrop(nodeIndex, item);
     removeHoverPad(); // Remove the hover pad after dropping a feature
+    console.log(`Dropped feature ${item.id} onto node ${nodeIndex}`);
   });
 
   // Allow dragging features out of the node
@@ -388,6 +399,7 @@ function attachNodeHandlers(node, nodeIndex, app, onFeatureDrop, onFeatureRemove
 
     setTimeout(async () => {
       await onFeatureRemove(nodeIndex);
+      console.log(`Feature ${featureId} removed from node ${nodeIndex} via dragstart`);
     }, 0);
   });
 
@@ -401,6 +413,7 @@ function attachNodeHandlers(node, nodeIndex, app, onFeatureDrop, onFeatureRemove
       node.classList.remove("node-dormant");
     }
     await onStateToggle(nodeIndex, !isAwakened);
+    console.log(`Toggled node ${nodeIndex} to ${!isAwakened ? "awakened" : "dormant"} state via double-click`);
   });
 
   // Add right-click handler to toggle corruption state with double right-click
@@ -523,6 +536,7 @@ function attachNodeHandlers(node, nodeIndex, app, onFeatureDrop, onFeatureRemove
       hoverPad.style.left = `${rect.right + 10}px`;
       hoverPad.style.top = `${rect.top}px`;
       document.body.appendChild(hoverPad);
+      console.log(`Displayed hover pad for node ${nodeIndex}:`, { elementName, description, featSummary, state });
     }, 200); // 200ms delay to prevent flickering
   });
 
