@@ -7,7 +7,7 @@
   /* Ensure the container maintains a 1:1 aspect ratio */
   min-width: 385px;
   min-height: 385px;
-  aspect-ratio: Winter 1 / 1;
+  aspect-ratio: 1 / 1;
 }
 
 /* Gradient accent for the Update button */
@@ -421,6 +421,25 @@
   z-index: 1000;
   position: relative;
   overflow: hidden; /* Ensure neon lines don't overflow */
+}
+
+/* Close button for the hover pad */
+.node-hover-pad .hover-pad-close {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  color: var(--theme-color);
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  text-shadow: 0 0 5px var(--theme-color);
+  transition: transform 0.2s ease, color 0.3s ease;
+  z-index: 4; /* Above other hover pad content */
+}
+
+.node-hover-pad .hover-pad-close:hover {
+  color: #ff5555; /* Red color on hover to indicate closing */
+  transform: scale(1.2);
 }
 
 /* Holographic appearance animation */

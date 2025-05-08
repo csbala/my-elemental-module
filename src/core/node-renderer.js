@@ -1,4 +1,8 @@
-import { getThemeColor, getNodeCorruptionStates, setNodeCorruptionState } from "../core/node-store.js";
+import {
+  getThemeColor,
+  getNodeCorruptionStates,
+  setNodeCorruptionState,
+} from "../core/node-store.js";
 
 /**
  * Generates the node configuration with a dynamic theme color.
@@ -9,9 +13,9 @@ import { getThemeColor, getNodeCorruptionStates, setNodeCorruptionState } from "
 function getNodeConfig(themeColor) {
   return {
     layout: {
-      centerX: 191,
-      centerY: 193,
-      radius: 188,
+      centerX: 192.5, // Adjusted to true center of 385px container (385 / 2)
+      centerY: 192.5, // Adjusted to true center of 385px container (385 / 2)
+      radius: 180, // Slightly reduced to fit within 385px container
     },
     vortex: {
       circleCount: 20,
@@ -25,7 +29,8 @@ function getNodeConfig(themeColor) {
     },
     styles: {
       defaultNode: {
-        background: "radial-gradient(circle at center, rgba(0, 255, 255, 0.2), transparent)",
+        background:
+          "radial-gradient(circle at center, rgba(0, 255, 255, 0.2), transparent)",
         border: `4px solid ${themeColor}`,
         boxShadow: `0 0 20px ${themeColor}, 0 0 40px ${themeColor} inset`,
       },
@@ -72,7 +77,8 @@ function getNodeConfig(themeColor) {
 function generateVortexCircles(vortexCircles, themeColor) {
   if (!vortexCircles) return;
 
-  const { circleCount, minPos, posRange, maxSize, sizeStep } = getNodeConfig(themeColor).vortex;
+  const { circleCount, minPos, posRange, maxSize, sizeStep } =
+    getNodeConfig(themeColor).vortex;
   const circleStyles = [];
 
   for (let i = 0; i < circleCount; i++) {
@@ -123,9 +129,12 @@ function styleNodeWithFeature(node, featureId, app, config) {
   let featureName = "";
 
   if (featureId) {
-    const feature = game.items.get(featureId) || app?.actor?.items.get(featureId);
+    const feature =
+      game.items.get(featureId) || app?.actor?.items.get(featureId);
     if (feature && feature.img && feature.img !== "icons/svg/mystery-man.svg") {
-      console.log(`Setting background for node with feature image: ${feature.img}`);
+      console.log(
+        `Setting background for node with feature image: ${feature.img}`
+      );
       node.style.background = `url(${feature.img}) center center / cover no-repeat`;
       node.style.border = config.styles.featureNode.border;
       node.style.boxShadow = config.styles.featureNode.boxShadow;
@@ -156,7 +165,11 @@ function applyDefaultNodeStyles(node, config) {
   node.style.background = background;
   node.style.border = border;
   node.style.boxShadow = boxShadow;
-  console.log(`Applied default styles to node:`, { background, border, boxShadow });
+  console.log(`Applied default styles to node:`, {
+    background,
+    border,
+    boxShadow,
+  });
 }
 
 /**
@@ -173,7 +186,18 @@ function applyDefaultNodeStyles(node, config) {
  * @param {Object} callbacks - Callback functions for drag-and-drop and state toggle.
  * @param {Object} config - The node configuration.
  */
-function updateExistingNode(node, index, position, value, featureId, isAwakened, isCorrupted, app, callbacks, config) {
+function updateExistingNode(
+  node,
+  index,
+  position,
+  value,
+  featureId,
+  isAwakened,
+  isCorrupted,
+  app,
+  callbacks,
+  config
+) {
   node.style.left = `${position.x}px`;
   node.style.top = `${position.y}px`;
 
@@ -197,8 +221,17 @@ function updateExistingNode(node, index, position, value, featureId, isAwakened,
   node.classList.toggle("node-dormant", !isAwakened);
   node.classList.toggle("node-corrupted", isCorrupted);
 
-  attachNodeHandlers(node, index, app, callbacks.onFeatureDrop, callbacks.onFeatureRemove, callbacks.onStateToggle);
-  console.log(`Updated node ${index}: Position (${position.x}, ${position.y}), Value: ${value}, Feature: ${featureId}, Awakened: ${isAwakened}, Corrupted: ${isCorrupted}`);
+  attachNodeHandlers(
+    node,
+    index,
+    app,
+    callbacks.onFeatureDrop,
+    callbacks.onFeatureRemove,
+    callbacks.onStateToggle
+  );
+  console.log(
+    `Updated node ${index}: Position (${position.x}, ${position.y}), Value: ${value}, Feature: ${featureId}, Awakened: ${isAwakened}, Corrupted: ${isCorrupted}`
+  );
 }
 
 /**
@@ -215,7 +248,17 @@ function updateExistingNode(node, index, position, value, featureId, isAwakened,
  * @param {Object} config - The node configuration.
  * @returns {HTMLElement} The created node element.
  */
-function createNewNode(index, position, value, featureId, isAwakened, isCorrupted, app, callbacks, config) {
+function createNewNode(
+  index,
+  position,
+  value,
+  featureId,
+  isAwakened,
+  isCorrupted,
+  app,
+  callbacks,
+  config
+) {
   const node = document.createElement("div");
   node.classList.add("circle", `node-${index + 1}`, "node-create");
 
@@ -247,9 +290,18 @@ function createNewNode(index, position, value, featureId, isAwakened, isCorrupte
   node.appendChild(input);
   node.appendChild(nameElement);
 
-  attachNodeHandlers(node, index, app, callbacks.onFeatureDrop, callbacks.onFeatureRemove, callbacks.onStateToggle);
+  attachNodeHandlers(
+    node,
+    index,
+    app,
+    callbacks.onFeatureDrop,
+    callbacks.onFeatureRemove,
+    callbacks.onStateToggle
+  );
 
-  console.log(`Created new node ${index}: Position (${position.x}, ${position.y}), Value: ${value}, Feature: ${featureId}, Awakened: ${isAwakened}, Corrupted: ${isCorrupted}`);
+  console.log(
+    `Created new node ${index}: Position (${position.x}, ${position.y}), Value: ${value}, Feature: ${featureId}, Awakened: ${isAwakened}, Corrupted: ${isCorrupted}`
+  );
   return node;
 }
 
@@ -271,9 +323,21 @@ function createNewNode(index, position, value, featureId, isAwakened, isCorrupte
  * @param {Function} options.onFeatureRemove - Callback when a feature is dragged out of a node.
  * @param {Function} options.onStateToggle - Callback when a node's state is toggled.
  */
-export function createTriangleNodes(container, nodeCount, nodeValues = [], nodeFeatures = [], nodeStates = [], nodeCorruptedStates = [], previousNodeCount = 0, themeColor, { app, onFeatureDrop, onFeatureRemove, onStateToggle } = {}) {
+export function createTriangleNodes(
+  container,
+  nodeCount,
+  nodeValues = [],
+  nodeFeatures = [],
+  nodeStates = [],
+  nodeCorruptedStates = [],
+  previousNodeCount = 0,
+  themeColor,
+  { app, onFeatureDrop, onFeatureRemove, onStateToggle } = {}
+) {
   const config = getNodeConfig(themeColor);
-  const existingNodes = Array.from(container.querySelectorAll(".circle:not(.center)"));
+  const existingNodes = Array.from(
+    container.querySelectorAll(".circle:not(.center)")
+  );
   const existingNodeCount = existingNodes.length;
 
   if (nodeCount < existingNodeCount) {
@@ -293,17 +357,40 @@ export function createTriangleNodes(container, nodeCount, nodeValues = [], nodeF
 
   const callbacks = { onFeatureDrop, onFeatureRemove, onStateToggle };
   for (let i = 0; i < Math.min(nodeCount, existingNodeCount); i++) {
-    updateExistingNode(existingNodes[i], i, newPositions[i], nodeValues[i], nodeFeatures[i] || null, nodeStates[i] || false, nodeCorruptedStates[i] || false, app, callbacks, config);
+    updateExistingNode(
+      existingNodes[i],
+      i,
+      newPositions[i],
+      nodeValues[i],
+      nodeFeatures[i] || null,
+      nodeStates[i] || false,
+      nodeCorruptedStates[i] || false,
+      app,
+      callbacks,
+      config
+    );
   }
 
   if (nodeCount > existingNodeCount) {
     for (let i = existingNodeCount; i < nodeCount; i++) {
-      const newNode = createNewNode(i, newPositions[i], nodeValues[i], nodeFeatures[i] || null, nodeStates[i] || false, nodeCorruptedStates[i] || false, app, callbacks, config);
+      const newNode = createNewNode(
+        i,
+        newPositions[i],
+        nodeValues[i],
+        nodeFeatures[i] || null,
+        nodeStates[i] || false,
+        nodeCorruptedStates[i] || false,
+        app,
+        callbacks,
+        config
+      );
       container.appendChild(newNode);
     }
   }
 
-  console.log(`Created/Updated ${nodeCount} nodes with theme color: ${themeColor}`);
+  console.log(
+    `Created/Updated ${nodeCount} nodes with theme color: ${themeColor}`
+  );
 }
 
 /**
@@ -316,7 +403,14 @@ export function createTriangleNodes(container, nodeCount, nodeValues = [], nodeF
  * @param {Function} onFeatureRemove - Callback when a feature is dragged out of a node.
  * @param {Function} onStateToggle - Callback when a node's state is toggled.
  */
-function attachNodeHandlers(node, nodeIndex, app, onFeatureDrop, onFeatureRemove, onStateToggle) {
+function attachNodeHandlers(
+  node,
+  nodeIndex,
+  app,
+  onFeatureDrop,
+  onFeatureRemove,
+  onStateToggle
+) {
   // Variables for double-right-click detection
   let lastRightClickTime = 0;
   const doubleClickThreshold = 500; // 500ms window for double right-click
@@ -359,7 +453,10 @@ function attachNodeHandlers(node, nodeIndex, app, onFeatureDrop, onFeatureRemove
       return;
     }
 
-    const item = (await fromUuid(data.uuid)) || game.items.get(data.id) || app?.actor?.items.get(data.id);
+    const item =
+      (await fromUuid(data.uuid)) ||
+      game.items.get(data.id) ||
+      app?.actor?.items.get(data.id);
     if (!item) {
       console.log("Item not found:", data.id);
       return;
@@ -399,7 +496,9 @@ function attachNodeHandlers(node, nodeIndex, app, onFeatureDrop, onFeatureRemove
 
     setTimeout(async () => {
       await onFeatureRemove(nodeIndex);
-      console.log(`Feature ${featureId} removed from node ${nodeIndex} via dragstart`);
+      console.log(
+        `Feature ${featureId} removed from node ${nodeIndex} via dragstart`
+      );
     }, 0);
   });
 
@@ -413,7 +512,11 @@ function attachNodeHandlers(node, nodeIndex, app, onFeatureDrop, onFeatureRemove
       node.classList.remove("node-dormant");
     }
     await onStateToggle(nodeIndex, !isAwakened);
-    console.log(`Toggled node ${nodeIndex} to ${!isAwakened ? "awakened" : "dormant"} state via double-click`);
+    console.log(
+      `Toggled node ${nodeIndex} to ${
+        !isAwakened ? "awakened" : "dormant"
+      } state via double-click`
+    );
   });
 
   // Add right-click handler to toggle corruption state with double right-click
@@ -427,7 +530,11 @@ function attachNodeHandlers(node, nodeIndex, app, onFeatureDrop, onFeatureRemove
       const isCorrupted = !node.classList.contains("node-corrupted");
       node.classList.toggle("node-corrupted", isCorrupted);
       await setNodeCorruptionState(app.actor, nodeIndex, isCorrupted);
-      console.log(`Toggled corruption state for node ${nodeIndex} to ${isCorrupted ? "corrupted" : "not corrupted"}`);
+      console.log(
+        `Toggled corruption state for node ${nodeIndex} to ${
+          isCorrupted ? "corrupted" : "not corrupted"
+        }`
+      );
       lastRightClickTime = 0; // Reset the timer
     } else {
       lastRightClickTime = currentTime;
@@ -455,12 +562,15 @@ function attachNodeHandlers(node, nodeIndex, app, onFeatureDrop, onFeatureRemove
       const themeColor = await getThemeColor(app.actor);
 
       // Render the custom chat message template
-      const chatContent = await renderTemplate("modules/my-elemental-module/templates/elemental-roll.hbs", {
-        elementName: elementName,
-        rollFormula: `1d6 + ${bonus}`,
-        rollResult: roll.total,
-        themeColor: themeColor,
-      });
+      const chatContent = await renderTemplate(
+        "modules/my-elemental-module/templates/elemental-roll.hbs",
+        {
+          elementName: elementName,
+          rollFormula: `1d6 + ${bonus}`,
+          rollResult: roll.total,
+          themeColor: themeColor,
+        }
+      );
 
       // Send the roll to chat with the custom template
       await ChatMessage.create({
@@ -468,7 +578,9 @@ function attachNodeHandlers(node, nodeIndex, app, onFeatureDrop, onFeatureRemove
         content: chatContent,
       });
 
-      console.log(`Rolled 1d6 + ${bonus} for node ${nodeIndex} (${elementName}): ${roll.total}`);
+      console.log(
+        `Rolled 1d6 + ${bonus} for node ${nodeIndex} (${elementName}): ${roll.total}`
+      );
     });
   }
 
@@ -477,11 +589,13 @@ function attachNodeHandlers(node, nodeIndex, app, onFeatureDrop, onFeatureRemove
     // Only show the hover pad if a feature is linked
     const featureId = node.dataset.featureId;
     if (!featureId) {
-      console.log(`No feature linked to node ${nodeIndex}, skipping hover pad.`);
+      console.log(
+        `No feature linked to node ${nodeIndex}, skipping hover pad.`
+      );
       return;
     }
 
-    // Remove any existing hover pad
+    // Remove any existing hover pad to prevent overlap
     removeHoverPad();
 
     // Delay the hover pad appearance to prevent flickering
@@ -498,10 +612,12 @@ function attachNodeHandlers(node, nodeIndex, app, onFeatureDrop, onFeatureRemove
       let featSummary = "No feat linked.";
       let description = "No description available.";
       if (featureId) {
-        const feat = game.items.get(featureId) || app?.actor?.items.get(featureId);
+        const feat =
+          game.items.get(featureId) || app?.actor?.items.get(featureId);
         if (feat) {
           featSummary = feat.name || "Unknown Feat";
-          description = feat.system?.description?.value || "No description available.";
+          description =
+            feat.system?.description?.value || "No description available.";
           // Strip HTML tags from description for display
           description = description.replace(/<[^>]+>/g, "");
           // Truncate description if too long
@@ -520,8 +636,12 @@ function attachNodeHandlers(node, nodeIndex, app, onFeatureDrop, onFeatureRemove
       if (isCorrupted) {
         hoverPad.classList.add("node-corrupted");
       }
-      hoverPad.style.setProperty("--theme-color", await getThemeColor(app.actor));
+      hoverPad.style.setProperty(
+        "--theme-color",
+        await getThemeColor(app.actor)
+      );
       hoverPad.innerHTML = `
+        <div class="hover-pad-close">×</div>
         <div class="hover-pad-header">${elementName}</div>
         <div class="hover-pad-content">
           <p><strong>Description:</strong> ${description}</p>
@@ -536,12 +656,41 @@ function attachNodeHandlers(node, nodeIndex, app, onFeatureDrop, onFeatureRemove
       hoverPad.style.left = `${rect.right + 10}px`;
       hoverPad.style.top = `${rect.top}px`;
       document.body.appendChild(hoverPad);
-      console.log(`Displayed hover pad for node ${nodeIndex}:`, { elementName, description, featSummary, state });
+      console.log(`Displayed hover pad for node ${nodeIndex}:`, {
+        elementName,
+        description,
+        featSummary,
+        state,
+      });
+
+      // Add click event listener to the close button
+      const closeButton = hoverPad.querySelector(".hover-pad-close");
+      if (closeButton) {
+        closeButton.addEventListener("click", () => {
+          removeHoverPad();
+          console.log(
+            `Hover pad for node ${nodeIndex} closed via close button`
+          );
+        });
+      }
+
+      // Remove the hover pad if the mouse leaves the hover pad itself
+      hoverPad.addEventListener("mouseleave", () => {
+        removeHoverPad();
+        console.log(
+          `Hover pad for node ${nodeIndex} removed via mouseleave on hover pad`
+        );
+      });
     }, 200); // 200ms delay to prevent flickering
   });
 
   // Remove the hover pad when the mouse leaves the node
-  node.addEventListener("mouseout", () => {
+  node.addEventListener("mouseout", (event) => {
+    // Only remove the hover pad if the mouse is not moving into the hover pad itself
+    const relatedTarget = event.relatedTarget;
+    if (hoverPad && relatedTarget && hoverPad.contains(relatedTarget)) {
+      return; // Mouse moved into the hover pad, don't remove it yet
+    }
     removeHoverPad();
   });
 
