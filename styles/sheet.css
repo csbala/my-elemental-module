@@ -12,7 +12,11 @@
 
 /* Gradient accent for the Update button */
 #updateNodesButton {
-  background: linear-gradient(45deg, var(--theme-color), color-mix(in srgb, var(--theme-color) 80%, white));
+  background: linear-gradient(
+    45deg,
+    var(--theme-color),
+    color-mix(in srgb, var(--theme-color) 80%, white)
+  );
   border: none;
   padding: 8px 16px;
   color: white;
@@ -30,7 +34,11 @@
 
 /* Hover effect for the Update button */
 #updateNodesButton:hover {
-  background: linear-gradient(45deg, color-mix(in srgb, var(--theme-color) 80%, white), var(--theme-color));
+  background: linear-gradient(
+    45deg,
+    color-mix(in srgb, var(--theme-color) 80%, white),
+    var(--theme-color)
+  );
   box-shadow: 0 0 15px var(--theme-color), 0 0 25px var(--theme-color);
   transform: scale(1.05);
 }
@@ -63,7 +71,11 @@
   border-radius: 50%;
   border: 4px solid var(--theme-color);
   box-shadow: 0 0 100px var(--theme-color), 0 0 40px var(--theme-color) inset;
-  background: radial-gradient(circle at center, color-mix(in srgb, var(--theme-color) 20%, transparent), transparent);
+  background: radial-gradient(
+    circle at center,
+    color-mix(in srgb, var(--theme-color) 20%, transparent),
+    transparent
+  );
   position: absolute;
 }
 
@@ -135,7 +147,8 @@
 
 /* Add transitions for position and size changes */
 .circle {
-  transition: left 0.5s ease, top 0.5s ease, width 0.5s ease, height 0.5s ease, opacity 0.5s ease;
+  transition: left 0.5s ease, top 0.5s ease, width 0.5s ease, height 0.5s ease,
+    opacity 0.5s ease;
 }
 
 /* Animation for node creation (growing from small to full size) */
@@ -532,10 +545,10 @@
     opacity: 0.2;
   }
   50% {
-    opacity: 0.4;
+    opacity: 0.8;
   }
   100% {
-    opacity: 0.2;
+    opacity: 0.4;
   }
 }
 
