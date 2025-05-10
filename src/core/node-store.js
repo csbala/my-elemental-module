@@ -10,6 +10,7 @@ const STORE_CONFIG = {
     nodeState: false,
     themeColor: "#00ffff",
     nodeCorrupted: false, // Default corruption state (false = not corrupted)
+    burnLevel: 0, // Default burn level
   },
 };
 
@@ -68,7 +69,9 @@ function normalizeArray(array, length, defaultValue) {
  */
 function validateNodeIndex(nodeIndex, nodeCount) {
   if (!Number.isInteger(nodeIndex) || nodeIndex < 0 || nodeIndex >= nodeCount) {
-    throw new Error(`Invalid node index: ${nodeIndex}. Must be between 0 and ${nodeCount - 1}`);
+    throw new Error(
+      `Invalid node index: ${nodeIndex}. Must be between 0 and ${nodeCount - 1}`
+    );
   }
 }
 
@@ -154,7 +157,9 @@ export async function setNodeFeature(actor, nodeIndex, featureId) {
   validateNodeIndex(nodeIndex, nodeCount);
 
   if (featureId !== null && typeof featureId !== "string") {
-    throw new Error(`Invalid feature ID: ${featureId}. Must be a string or null`);
+    throw new Error(
+      `Invalid feature ID: ${featureId}. Must be a string or null`
+    );
   }
 
   const features = await getNodeFeatures(actor);
@@ -204,7 +209,11 @@ export async function setNodeState(actor, nodeIndex, isAwakened) {
 export async function getNodeCorruptionStates(actor) {
   const nodeCount = await getNodeCount(actor);
   const corruptedStates = await getFlag(actor, "nodeCorruptedStates", []);
-  return normalizeArray(corruptedStates, nodeCount, STORE_CONFIG.defaults.nodeCorrupted);
+  return normalizeArray(
+    corruptedStates,
+    nodeCount,
+    STORE_CONFIG.defaults.nodeCorrupted
+  );
 }
 
 /**
@@ -220,7 +229,9 @@ export async function setNodeCorruptionState(actor, nodeIndex, isCorrupted) {
   validateNodeIndex(nodeIndex, nodeCount);
 
   if (typeof isCorrupted !== "boolean") {
-    throw new Error(`Invalid corruption state: ${isCorrupted}. Must be a boolean`);
+    throw new Error(
+      `Invalid corruption state: ${isCorrupted}. Must be a boolean`
+    );
   }
 
   const corruptedStates = await getNodeCorruptionStates(actor);
@@ -247,7 +258,35 @@ export async function getThemeColor(actor) {
  */
 export async function setThemeColor(actor, color) {
   if (!/^#[0-9A-F]{6}$/i.test(color)) {
-    throw new Error(`Invalid color: ${color}. Must be a hex color (e.g., "#00ffff")`);
+    throw new Error(
+      `Invalid color: ${color}. Must be a hex color (e.g., "#00ffff")`
+    );
   }
   await setFlag(actor, "themeColor", color);
+}
+
+/**
+ * Retrieve the stored burn level for a specific actor.
+ *
+ * @param {Actor5e} actor - The Foundry VTT actor object.
+ * @returns {Promise<number>} The burn level as an integer.
+ */
+export async function getBurnLevel(actor) {
+  return await getFlag(actor, "burnLevel", STORE_CONFIG.defaults.burnLevel);
+}
+
+/**
+ * Set or update the burn level for a specific actor.
+ *
+ * @param {Actor5e} actor - The Foundry VTT actor object.
+ * @param {number} level - The burn level to set (must be a non-negative integer).
+ * @returns {Promise<void>}
+ */
+export async function setBurnLevel(actor, level) {
+  if (!Number.isInteger(level) || level < 0) {
+    throw new Error(
+      `Invalid burn level: ${level}. Must be a non-negative integer`
+    );
+  }
+  await setFlag(actor, "burnLevel", level);
 }

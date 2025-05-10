@@ -11,6 +11,8 @@ import {
   getThemeColor,
   setThemeColor,
   getNodeCorruptionStates,
+  getBurnLevel,
+  setBurnLevel,
 } from "../core/node-store.js";
 
 /**
@@ -34,16 +36,30 @@ const UI_CONFIG = {
  * Ensures required DOM elements are present.
  *
  * @param {HTMLElement} mainCircle - The container for the nodes.
- * @param {HTMLElement} input - The input field for node count.
+ * @param {HTMLElement} nodeCountInput - The input field for node count.
+ * @param {HTMLElement} burnLevelInput - The input field for burn level.
  * @param {HTMLElement} button - The update button.
  * @param {HTMLElement} colorPicker - The color picker input.
  * @throws {Error} If any required element is missing.
  */
-function validateDomElements(mainCircle, input, button, colorPicker) {
-  if (!mainCircle || !input || !button || !colorPicker) {
+function validateDomElements(
+  mainCircle,
+  nodeCountInput,
+  burnLevelInput,
+  button,
+  colorPicker
+) {
+  if (
+    !mainCircle ||
+    !nodeCountInput ||
+    !burnLevelInput ||
+    !button ||
+    !colorPicker
+  ) {
     throw new Error("Missing required DOM elements", {
       mainCircle,
-      input,
+      nodeCountInput,
+      burnLevelInput,
       button,
       colorPicker,
     });
@@ -70,7 +86,6 @@ function setupVortexLayer(mainCircle) {
  * @param {ActorSheet} app - The application rendering the sheet.
  */
 async function forceRender(app) {
-  // Do not set the activeTab flag to "elements" to preserve the current tab
   await app.render();
   console.log(
     `Re-rendered ${app.actor.type} sheet: ${app.actor.name} without changing active tab`
@@ -78,7 +93,7 @@ async function forceRender(app) {
 }
 
 /**
- * Attaches input event listeners to node input fields.
+ * Attaches change event listeners to node input fields.
  *
  * @param {HTMLElement} mainCircle - The container for the nodes.
  * @param {ActorSheet} app - The application rendering the sheet.
@@ -88,13 +103,48 @@ function attachNodeInputListeners(mainCircle, app) {
     ".circle input[type='number']"
   );
   nodeInputs.forEach((nodeInput) => {
-    nodeInput.addEventListener("input", async (event) => {
+    nodeInput.addEventListener("change", async (event) => {
       const nodeIndex = parseInt(event.target.dataset.nodeIndex, 10);
       const value = parseInt(event.target.value, 10);
       if (!isNaN(value)) {
         await setNodeValue(app.actor, nodeIndex, value);
+        console.log(
+          `Node ${nodeIndex} bonus updated to ${value} for ${app.actor.type} sheet: ${app.actor.name}`
+        );
+      } else {
+        // Reset to the last valid value if the input is invalid
+        const savedValue = (await getNodeValues(app.actor))[nodeIndex] || 0;
+        nodeInput.value = savedValue;
+        console.log(
+          `Invalid node bonus input for node ${nodeIndex}, reset to ${savedValue} for ${app.actor.type} sheet: ${app.actor.name}`
+        );
       }
     });
+  });
+}
+
+/**
+ * Sets up the burn level input's change handler.
+ *
+ * @param {HTMLElement} burnLevelInput - The burn level input field.
+ * @param {ActorSheet} app - The application rendering the sheet.
+ */
+function setupBurnLevelInput(burnLevelInput, app) {
+  burnLevelInput.addEventListener("change", async (event) => {
+    const value = parseInt(event.target.value, 10);
+    if (!isNaN(value) && value >= 0) {
+      await setBurnLevel(app.actor, value);
+      console.log(
+        `Burn level updated to ${value} for ${app.actor.type} sheet: ${app.actor.name}`
+      );
+    } else {
+      // Reset to the last valid value if the input is invalid
+      const savedBurnLevel = await getBurnLevel(app.actor);
+      burnLevelInput.value = savedBurnLevel;
+      console.log(
+        `Invalid burn level input, reset to ${savedBurnLevel} for ${app.actor.type} sheet: ${app.actor.name}`
+      );
+    }
   });
 }
 
@@ -446,12 +496,12 @@ function setupTabHandlers(tabs, app) {
  * Applies the theme color to the DOM elements.
  *
  * @param {HTMLElement} mainCircle - The container for the nodes.
- * @param {HTMLElement} input - The input field for node count.
+ * @param {HTMLElement} nodeCountInput - The input field for node count.
  * @param {string} themeColor - The theme color in hex format.
  */
-function applyThemeColor(mainCircle, input, themeColor) {
+function applyThemeColor(mainCircle, nodeCountInput, themeColor) {
   mainCircle.style.setProperty("--theme-color", themeColor);
-  input.style.borderColor = themeColor;
+  nodeCountInput.style.borderColor = themeColor;
   console.log(`Applied theme color: ${themeColor}`);
 }
 
@@ -468,21 +518,29 @@ export async function configureNodeUI(app, tabContent, tabs) {
     const mainCircle = tabContent[0].querySelector(
       ".elemental-circle-container"
     );
-    const input = tabContent[0].querySelector("#nodeCountInput");
+    const nodeCountInput = tabContent[0].querySelector("#nodeCountInput");
+    const burnLevelInput = tabContent[0].querySelector("#burnLevelInput");
     const button = tabContent[0].querySelector("#updateNodesButton");
     const colorPicker = tabContent[0].querySelector("#themeColorPicker");
     const rulesInfo = tabContent[0].querySelector("#element-rules-info");
-    validateDomElements(mainCircle, input, button, colorPicker);
+    validateDomElements(
+      mainCircle,
+      nodeCountInput,
+      burnLevelInput,
+      button,
+      colorPicker
+    );
 
-    // Step 2: Load initial node data, theme color, and corruption states
+    // Step 2: Load initial node data, theme color, burn level, and corruption states
     const savedCount = await getNodeCount(app.actor);
     const nodeValues = await getNodeValues(app.actor);
     const nodeFeatures = await getNodeFeatures(app.actor);
     const nodeStates = await getNodeStates(app.actor);
     const nodeCorruptedStates = await getNodeCorruptionStates(app.actor);
     const themeColor = await getThemeColor(app.actor);
+    const burnLevel = await getBurnLevel(app.actor);
     console.log(
-      `Loaded node data for ${app.actor.type} sheet: ${app.actor.name} - Count: ${savedCount}, Values: ${nodeValues}, Features: ${nodeFeatures}, States: ${nodeStates}, Corrupted States: ${nodeCorruptedStates}, Theme Color: ${themeColor}`
+      `Loaded node data for ${app.actor.type} sheet: ${app.actor.name} - Count: ${savedCount}, Values: ${nodeValues}, Features: ${nodeFeatures}, States: ${nodeStates}, Corrupted States: ${nodeCorruptedStates}, Theme Color: ${themeColor}, Burn Level: ${burnLevel}`
     );
 
     // Step 3: Check if any Elements are awakened and toggle the rules info bubble
@@ -505,7 +563,7 @@ export async function configureNodeUI(app, tabContent, tabs) {
     const callbacks = createNodeCallbacks(app);
 
     // Step 6: Apply theme color to DOM
-    applyThemeColor(mainCircle, input, themeColor);
+    applyThemeColor(mainCircle, nodeCountInput, themeColor);
 
     // Step 7: Render initial nodes with theme color and corruption states
     createTriangleNodes(
@@ -519,12 +577,21 @@ export async function configureNodeUI(app, tabContent, tabs) {
       themeColor,
       { app, ...callbacks }
     );
-    input.value = savedCount;
+    nodeCountInput.value = savedCount;
+    burnLevelInput.value = burnLevel;
     colorPicker.value = themeColor;
 
     // Step 8: Attach event listeners
     attachNodeInputListeners(mainCircle, app);
-    setupUpdateButton(button, input, mainCircle, app, callbacks, themeColor);
+    setupUpdateButton(
+      button,
+      nodeCountInput,
+      mainCircle,
+      app,
+      callbacks,
+      themeColor
+    );
+    setupBurnLevelInput(burnLevelInput, app);
     setupColorPicker(colorPicker, app);
     setupTabHandlers(tabs, app);
     console.log(
