@@ -18,18 +18,20 @@ export function setupUpdateHook() {
     const activeTab = sheet.element
       ?.find('.tabs[data-group="primary"] a.active')
       .attr("data-tab");
-    const isElementalTabActive = activeTab === "elements";
+    const storedTab = await actor.getFlag("my-elemental-module", "activeTab");
+    const isElementalTabActive =
+      activeTab === "elements" || storedTab === "elements";
 
     if (isElementalUpdate || isElementalTabActive) {
       console.log(
         `Actor updated, forcing re-render for ${actor.type} sheet: ${
           actor.name
-        } (Elemental update: ${!!isElementalUpdate}, Elemental tab active: ${isElementalTabActive})`
+        } (Elemental update: ${!!isElementalUpdate}, Elemental tab active: ${isElementalTabActive}, Active tab: ${activeTab}, Stored tab: ${storedTab})`
       );
       await sheet.render();
     } else {
       console.log(
-        `Actor updated, skipping re-render for ${actor.type} sheet: ${actor.name} (Not an Elemental update, and Elemental tab not active)`
+        `Actor updated, skipping re-render for ${actor.type} sheet: ${actor.name} (Not an Elemental update, and Elemental tab not active, Active tab: ${activeTab}, Stored tab: ${storedTab})`
       );
     }
   });

@@ -1,4 +1,3 @@
-import { debounce } from "../utils/debounce.js";
 import {
   injectTabButton,
   injectTabContent,
@@ -12,7 +11,7 @@ import { restoreTabState } from "../elements-tab/tab-state.js";
  * @param {ActorSheet} app - The application rendering the sheet.
  * @param {jQuery} html - The jQuery-wrapped HTML content of the sheet.
  */
-export const controlElementsTab = debounce(async (app, html) => {
+export async function controlElementsTab(app, html) {
   console.log("🛠️ Setting up Elements Tab...");
 
   const tabs = html.find('.tabs[data-group="primary"]');
@@ -31,4 +30,4 @@ export const controlElementsTab = debounce(async (app, html) => {
 
   // Restore the active tab state
   await restoreTabState(app, html, tabs, tabBody);
-}, 100);
+}

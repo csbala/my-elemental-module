@@ -16,16 +16,33 @@ export async function restoreTabState(app, html, tabs, tabBody) {
   const storedActiveTab =
     (await app.actor.getFlag("my-elemental-module", "activeTab")) || "details";
 
-  // Prioritize the current active tab from the UI if it exists; otherwise, use the stored tab or app._activeTab
-  const finalActiveTab = currentActiveTab || app._activeTab || storedActiveTab;
+  // Use Foundry's internal tab state (app._tabs) to determine the default tab
+  const defaultTab = app._tabs?.[0]?.active || "details";
 
-  console.log(
-    `Restoring active tab: ${finalActiveTab} (Current: ${currentActiveTab}, Stored: ${storedActiveTab}, App: ${app._activeTab})`
-  );
-  tabs.find("a").removeClass("active");
-  tabBody.find(".tab").removeClass("active");
-  tabs.find(`a[data-tab="${finalActiveTab}"]`).addClass("active");
-  tabBody.find(`.tab[data-tab="${finalActiveTab}"]`).addClass("active");
+  // On the initial render, prioritize the default tab (usually "details") unless the user has explicitly set the tab in this session
+  const finalActiveTab = currentActiveTab || app._activeTab || defaultTab;
+
+  // Only use the stored tab if the default tab is "elements" and the stored tab matches (indicating a user preference)
+  if (finalActiveTab !== "elements" || storedActiveTab !== "elements") {
+    console.log(
+      `Restoring active tab: ${finalActiveTab} (Default: ${defaultTab}, Current: ${currentActiveTab}, Stored: ${storedActiveTab}, App: ${app._activeTab})`
+    );
+    tabs.find("a").removeClass("active");
+    tabBody.find(".tab").removeClass("active");
+    tabs.find(`a[data-tab="${finalActiveTab}"]`).addClass("active");
+    tabBody.find(`.tab[data-tab="${finalActiveTab}"]`).addClass("active");
+
+    // Update the stored tab state to reflect the current tab
+    await app.actor.setFlag("my-elemental-module", "activeTab", finalActiveTab);
+  } else {
+    console.log(
+      `Restoring stored active tab: ${storedActiveTab} (Default: ${defaultTab}, Current: ${currentActiveTab}, App: ${app._activeTab})`
+    );
+    tabs.find("a").removeClass("active");
+    tabBody.find(".tab").removeClass("active");
+    tabs.find(`a[data-tab="${storedActiveTab}"]`).addClass("active");
+    tabBody.find(`.tab[data-tab="${storedActiveTab}"]`).addClass("active");
+  }
 
   app.activateTabs?.();
 }
