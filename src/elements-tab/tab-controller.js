@@ -4,6 +4,7 @@ import {
 } from "../elements-tab/tab-injector.js";
 import { configureNodeUI } from "../elements-tab/node-ui.js";
 import { restoreTabState } from "../elements-tab/tab-state.js";
+import { logger } from "../logger.js";
 
 /**
  * Controls the Elements tab in the character sheet, managing its injection and state.
@@ -12,7 +13,7 @@ import { restoreTabState } from "../elements-tab/tab-state.js";
  * @param {jQuery} html - The jQuery-wrapped HTML content of the sheet.
  */
 export async function controlElementsTab(app, html) {
-  console.log("🛠️ Setting up Elements Tab...");
+  logger.debug("🛠️ Setting up Elements Tab...");
 
   const tabs = html.find('.tabs[data-group="primary"]');
   const tabBody = html.find(".tab-body");

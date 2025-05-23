@@ -3,6 +3,7 @@ import {
   getNodeCorruptionStates,
   setNodeCorruptionState,
 } from "../core/node-store.js";
+import { logger } from "../logger.js";
 
 /**
  * Generates the node configuration with a dynamic theme color.
@@ -90,7 +91,7 @@ function generateVortexCircles(vortexCircles, themeColor) {
   }
 
   vortexCircles.style.background = circleStyles.join(",");
-  console.log(`Generated vortex circles with theme color: ${themeColor}`);
+  logger.debug(`Generated vortex circles with theme color: ${themeColor}`);
 }
 
 /**
@@ -112,7 +113,7 @@ function calculateNodePositions(nodeCount, config) {
     positions.push({ x, y });
   }
 
-  console.log(`Calculated positions for ${nodeCount} nodes:`, positions);
+  logger.debug(`Calculated positions for ${nodeCount} nodes:`, positions);
   return positions;
 }
 
@@ -132,7 +133,7 @@ function styleNodeWithFeature(node, featureId, app, config) {
     const feature =
       game.items.get(featureId) || app?.actor?.items.get(featureId);
     if (feature && feature.img && feature.img !== "icons/svg/mystery-man.svg") {
-      console.log(
+      logger.debug(
         `Setting background for node with feature image: ${feature.img}`
       );
       node.style.background = `url(${feature.img}) center center / cover no-repeat`;
@@ -141,7 +142,7 @@ function styleNodeWithFeature(node, featureId, app, config) {
       node.dataset.featureId = featureId;
       featureName = feature.name || "";
     } else {
-      console.log(`Feature ${featureId} not found or has default image`);
+      logger.debug(`Feature ${featureId} not found or has default image`);
       applyDefaultNodeStyles(node, config);
       delete node.dataset.featureId;
     }
@@ -150,7 +151,9 @@ function styleNodeWithFeature(node, featureId, app, config) {
     delete node.dataset.featureId;
   }
 
-  console.log(`Styled node with feature ID ${featureId}, name: ${featureName}`);
+  logger.debug(
+    `Styled node with feature ID ${featureId}, name: ${featureName}`
+  );
   return featureName;
 }
 
@@ -165,7 +168,7 @@ function applyDefaultNodeStyles(node, config) {
   node.style.background = background;
   node.style.border = border;
   node.style.boxShadow = boxShadow;
-  console.log(`Applied default styles to node:`, {
+  logger.debug(`Applied default styles to node:`, {
     background,
     border,
     boxShadow,
@@ -229,7 +232,7 @@ function updateExistingNode(
     callbacks.onFeatureRemove,
     callbacks.onStateToggle
   );
-  console.log(
+  logger.debug(
     `Updated node ${index}: Position (${position.x}, ${position.y}), Value: ${value}, Feature: ${featureId}, Awakened: ${isAwakened}, Corrupted: ${isCorrupted}`
   );
 }
@@ -299,7 +302,7 @@ function createNewNode(
     callbacks.onStateToggle
   );
 
-  console.log(
+  logger.debug(
     `Created new node ${index}: Position (${position.x}, ${position.y}), Value: ${value}, Feature: ${featureId}, Awakened: ${isAwakened}, Corrupted: ${isCorrupted}`
   );
   return node;
@@ -347,7 +350,7 @@ export function createTriangleNodes(
     setTimeout(() => {
       existingNodes.slice(nodeCount).forEach((node) => node.remove());
     }, config.animation.durationMs);
-    console.log(`Removed ${existingNodeCount - nodeCount} excess nodes.`);
+    logger.debug(`Removed ${existingNodeCount - nodeCount} excess nodes.`);
   }
 
   const vortexCircles = container.querySelector(".vortex-circles");
@@ -388,7 +391,7 @@ export function createTriangleNodes(
     }
   }
 
-  console.log(
+  logger.debug(
     `Created/Updated ${nodeCount} nodes with theme color: ${themeColor}`
   );
 }
@@ -422,7 +425,7 @@ function attachNodeHandlers(
     if (hoverPad) {
       hoverPad.remove();
       hoverPad = null;
-      console.log(`Removed hover pad for node ${nodeIndex}`);
+      logger.debug(`Removed hover pad for node ${nodeIndex}`);
     }
     if (hoverTimeout) {
       clearTimeout(hoverTimeout);
@@ -434,22 +437,22 @@ function attachNodeHandlers(
   node.addEventListener("dragover", (event) => {
     event.preventDefault();
     event.dataTransfer.dropEffect = "move";
-    console.log(`Drag over node ${nodeIndex}`);
+    logger.debug(`Drag over node ${nodeIndex}`);
   });
 
   node.addEventListener("drop", async (event) => {
     event.preventDefault();
-    console.log(`Drop on node ${nodeIndex}`);
+    logger.debug(`Drop on node ${nodeIndex}`);
     let data;
     try {
       data = JSON.parse(event.dataTransfer.getData("text/plain"));
-      console.log("Dropped data:", data);
+      logger.debug("Dropped data:", data);
     } catch (e) {
-      console.error("Failed to parse drag data:", e);
+      logger.error("Failed to parse drag data:", e);
       return;
     }
     if (data.type !== "Item") {
-      console.log("Dropped data is not an Item:", data.type);
+      logger.debug("Dropped data is not an Item:", data.type);
       return;
     }
 
@@ -458,28 +461,28 @@ function attachNodeHandlers(
       game.items.get(data.id) ||
       app?.actor?.items.get(data.id);
     if (!item) {
-      console.log("Item not found:", data.id);
+      logger.debug("Item not found:", data.id);
       return;
     }
     if (item.type !== "feat") {
-      console.log("Item is not a feat:", item.type);
+      logger.debug("Item is not a feat:", item.type);
       return;
     }
 
     await onFeatureDrop(nodeIndex, item);
     removeHoverPad(); // Remove the hover pad after dropping a feature
-    console.log(`Dropped feature ${item.id} onto node ${nodeIndex}`);
+    logger.debug(`Dropped feature ${item.id} onto node ${nodeIndex}`);
   });
 
   // Allow dragging features out of the node
   node.addEventListener("dragstart", (event) => {
     const featureId = node.dataset.featureId;
     if (!featureId) {
-      console.log(`No feature to drag from node ${nodeIndex}`);
+      logger.debug(`No feature to drag from node ${nodeIndex}`);
       return;
     }
 
-    console.log(`Dragging feature ${featureId} from node ${nodeIndex}`);
+    logger.debug(`Dragging feature ${featureId} from node ${nodeIndex}`);
     event.dataTransfer.setData(
       "text/plain",
       JSON.stringify({
@@ -496,7 +499,7 @@ function attachNodeHandlers(
 
     setTimeout(async () => {
       await onFeatureRemove(nodeIndex);
-      console.log(
+      logger.debug(
         `Feature ${featureId} removed from node ${nodeIndex} via dragstart`
       );
     }, 0);
@@ -512,7 +515,7 @@ function attachNodeHandlers(
       node.classList.remove("node-dormant");
     }
     await onStateToggle(nodeIndex, !isAwakened);
-    console.log(
+    logger.debug(
       `Toggled node ${nodeIndex} to ${
         !isAwakened ? "awakened" : "dormant"
       } state via double-click`
@@ -530,7 +533,7 @@ function attachNodeHandlers(
       const isCorrupted = !node.classList.contains("node-corrupted");
       node.classList.toggle("node-corrupted", isCorrupted);
       await setNodeCorruptionState(app.actor, nodeIndex, isCorrupted);
-      console.log(
+      logger.debug(
         `Toggled corruption state for node ${nodeIndex} to ${
           isCorrupted ? "corrupted" : "not corrupted"
         }`
@@ -546,7 +549,7 @@ function attachNodeHandlers(
   if (nameElement) {
     nameElement.addEventListener("click", async () => {
       if (node.classList.contains("node-dormant")) {
-        console.log(`Cannot roll for node ${nodeIndex}: Element is dormant`);
+        logger.debug(`Cannot roll for node ${nodeIndex}: Element is dormant`);
         return;
       }
 
@@ -578,7 +581,7 @@ function attachNodeHandlers(
         content: chatContent,
       });
 
-      console.log(
+      logger.debug(
         `Rolled 1d6 + ${bonus} for node ${nodeIndex} (${elementName}): ${roll.total}`
       );
     });
@@ -589,7 +592,7 @@ function attachNodeHandlers(
     // Only show the hover pad if a feature is linked
     const featureId = node.dataset.featureId;
     if (!featureId) {
-      console.log(
+      logger.debug(
         `No feature linked to node ${nodeIndex}, skipping hover pad.`
       );
       return;
@@ -656,7 +659,7 @@ function attachNodeHandlers(
       hoverPad.style.left = `${rect.right + 10}px`;
       hoverPad.style.top = `${rect.top}px`;
       document.body.appendChild(hoverPad);
-      console.log(`Displayed hover pad for node ${nodeIndex}:`, {
+      logger.debug(`Displayed hover pad for node ${nodeIndex}:`, {
         elementName,
         description,
         featSummary,
@@ -668,7 +671,7 @@ function attachNodeHandlers(
       if (closeButton) {
         closeButton.addEventListener("click", () => {
           removeHoverPad();
-          console.log(
+          logger.debug(
             `Hover pad for node ${nodeIndex} closed via close button`
           );
         });
@@ -677,7 +680,7 @@ function attachNodeHandlers(
       // Remove the hover pad if the mouse leaves the hover pad itself
       hoverPad.addEventListener("mouseleave", () => {
         removeHoverPad();
-        console.log(
+        logger.debug(
           `Hover pad for node ${nodeIndex} removed via mouseleave on hover pad`
         );
       });

@@ -1,8 +1,10 @@
+import { logger } from "../logger.js";
+
 /**
  * Sets up the init hook for the Elemental Module.
  */
 export function setupInitHook() {
   Hooks.once("init", async function () {
-    console.log("🌟 Elemental System | Initializing...");
+    logger.debug("🌟 Elemental System | Initializing...");
   });
 }

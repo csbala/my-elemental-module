@@ -1,3 +1,4 @@
+import { logger } from "../logger.js";
 /**
  * Injects the Elements tab button into the sheet's tab navigation.
  *
@@ -12,9 +13,13 @@ export async function injectTabButton(app, tabs) {
         </a>
       `);
     tabs.append(tabButton);
-    console.log(`✨ Tab button added to ${app.actor.type} sheet: ${app.actor.name}`);
+    logger.debug(
+      `✨ Tab button added to ${app.actor.type} sheet: ${app.actor.name}`
+    );
   } else {
-    console.log(`Tab button already exists on ${app.actor.type} sheet: ${app.actor.name}`);
+    logger.debug(
+      `Tab button already exists on ${app.actor.type} sheet: ${app.actor.name}`
+    );
   }
 }
 
@@ -27,16 +32,22 @@ export async function injectTabButton(app, tabs) {
  */
 export async function injectTabContent(app, tabBody) {
   if (!tabBody.find('.tab[data-tab="elements"]').length) {
-    const htmlContent = await renderTemplate("modules/my-elemental-module/templates/elements-tab.hbs");
+    const htmlContent = await renderTemplate(
+      "modules/my-elemental-module/templates/elements-tab.hbs"
+    );
     const tabContent = $(`
         <div class="tab" data-tab="elements" data-group="primary">
           ${htmlContent}
         </div>
       `);
     tabBody.append(tabContent);
-    console.log(`✅ Tab content added to .tab-body for ${app.actor.type} sheet: ${app.actor.name}`);
+    logger.debug(
+      `✅ Tab content added to .tab-body for ${app.actor.type} sheet: ${app.actor.name}`
+    );
     return tabContent;
   }
-  console.log(`Tab content already exists on ${app.actor.type} sheet: ${app.actor.name}`);
+  logger.debug(
+    `Tab content already exists on ${app.actor.type} sheet: ${app.actor.name}`
+  );
   return null;
 }

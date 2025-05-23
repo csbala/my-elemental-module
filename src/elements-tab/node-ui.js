@@ -14,6 +14,7 @@ import {
   getBurnLevel,
   setBurnLevel,
 } from "../core/node-store.js";
+import { logger } from "../logger.js";
 
 /**
  * Configuration for the node UI, centralizing constants and defaults.
@@ -87,7 +88,7 @@ function setupVortexLayer(mainCircle) {
  */
 async function forceRender(app) {
   await app.render();
-  console.log(
+  logger.debug(
     `Re-rendered ${app.actor.type} sheet: ${app.actor.name} without changing active tab`
   );
 }
@@ -108,14 +109,14 @@ function attachNodeInputListeners(mainCircle, app) {
       const value = parseInt(event.target.value, 10);
       if (!isNaN(value)) {
         await setNodeValue(app.actor, nodeIndex, value);
-        console.log(
+        logger.debug(
           `Node ${nodeIndex} bonus updated to ${value} for ${app.actor.type} sheet: ${app.actor.name}`
         );
       } else {
         // Reset to the last valid value if the input is invalid
         const savedValue = (await getNodeValues(app.actor))[nodeIndex] || 0;
         nodeInput.value = savedValue;
-        console.log(
+        logger.debug(
           `Invalid node bonus input for node ${nodeIndex}, reset to ${savedValue} for ${app.actor.type} sheet: ${app.actor.name}`
         );
       }
@@ -134,14 +135,14 @@ function setupBurnLevelInput(burnLevelInput, app) {
     const value = parseInt(event.target.value, 10);
     if (!isNaN(value) && value >= 0) {
       await setBurnLevel(app.actor, value);
-      console.log(
+      logger.debug(
         `Burn level updated to ${value} for ${app.actor.type} sheet: ${app.actor.name}`
       );
     } else {
       // Reset to the last valid value if the input is invalid
       const savedBurnLevel = await getBurnLevel(app.actor);
       burnLevelInput.value = savedBurnLevel;
-      console.log(
+      logger.debug(
         `Invalid burn level input, reset to ${savedBurnLevel} for ${app.actor.type} sheet: ${app.actor.name}`
       );
     }
@@ -156,15 +157,15 @@ function setupBurnLevelInput(burnLevelInput, app) {
  */
 function createNodeCallbacks(app) {
   const onFeatureDrop = async (nodeIndex, item) => {
-    console.log(
+    logger.debug(
       `🔽 Dropping feature ${item.name} (ID: ${item.id}) onto node ${nodeIndex} for ${app.actor.type} sheet: ${app.actor.name}`
     );
 
     // Remove existing feature if present
     const currentFeatures = await getNodeFeatures(app.actor);
-    console.log(`Current features on actor:`, currentFeatures);
+    logger.debug(`Current features on actor:`, currentFeatures);
     if (currentFeatures[nodeIndex]) {
-      console.log(
+      logger.debug(
         `Node ${nodeIndex} already has a feature with ID: ${currentFeatures[nodeIndex]}. Replacing it.`
       );
       const existingFeature = app.actor.items.get(currentFeatures[nodeIndex]);
@@ -173,17 +174,17 @@ function createNodeCallbacks(app) {
           await app.actor.deleteEmbeddedDocuments("Item", [
             currentFeatures[nodeIndex],
           ]);
-          console.log(
+          logger.debug(
             `Successfully deleted existing feature ${currentFeatures[nodeIndex]} from ${app.actor.type} sheet.`
           );
         } catch (error) {
-          console.error(
+          logger.error(
             `Failed to delete existing feature ${currentFeatures[nodeIndex]} from ${app.actor.type} sheet:`,
             error
           );
         }
       } else {
-        console.log(
+        logger.debug(
           `Existing feature ${currentFeatures[nodeIndex]} not found on ${app.actor.type} sheet, skipping deletion.`
         );
       }
@@ -194,7 +195,7 @@ function createNodeCallbacks(app) {
     const existingItem = app.actor.items.find(
       (i) => i.id === item.id || (i.name === item.name && i.type === item.type)
     );
-    console.log(
+    logger.debug(
       `Checking for existing item on ${app.actor.type} sheet:`,
       existingItem
     );
@@ -202,19 +203,19 @@ function createNodeCallbacks(app) {
     if (existingItem) {
       // Item already exists on the character sheet, use its ID
       featureId = existingItem.id;
-      console.log(
+      logger.debug(
         `Feature ${item.name} (ID: ${featureId}) already exists on ${app.actor.type} sheet. Using existing feature.`
       );
     } else if (item.parent && item.parent !== app.actor) {
       // Item is owned by another actor; create a copy but don't add to Features tab
-      console.log(
+      logger.debug(
         "Item is owned by another actor. Creating a copy without adding to Features tab."
       );
       const itemData = item.toObject();
       featureId = itemData._id;
     } else {
       // Item is unowned (e.g., from the Items Directory); use its ID directly
-      console.log(
+      logger.debug(
         "Item is unowned. Using directly without adding to Features tab."
       );
       featureId = item.id;
@@ -224,20 +225,20 @@ function createNodeCallbacks(app) {
     const featuresTabItems = app.actor.items
       .filter((i) => i.type === "feat")
       .map((i) => ({ id: i.id, name: i.name }));
-    console.log(
+    logger.debug(
       `Features tab contents after drop (before setting feature) for ${app.actor.type} sheet:`,
       featuresTabItems
     );
 
     // Update the node's feature ID without adding to Features tab
     await setNodeFeature(app.actor, nodeIndex, featureId);
-    console.log(`Feature ID ${featureId} set for node ${nodeIndex}`);
+    logger.debug(`Feature ID ${featureId} set for node ${nodeIndex}`);
 
     // Log the Features tab again to confirm no addition
     const updatedFeaturesTabItems = app.actor.items
       .filter((i) => i.type === "feat")
       .map((i) => ({ id: i.id, name: i.name }));
-    console.log(
+    logger.debug(
       `Features tab contents after drop (after setting feature) for ${app.actor.type} sheet:`,
       updatedFeaturesTabItems
     );
@@ -246,14 +247,14 @@ function createNodeCallbacks(app) {
   };
 
   const onFeatureRemove = async (nodeIndex) => {
-    console.log(
+    logger.debug(
       `🔼 Removing feature from node ${nodeIndex} for ${app.actor.type} sheet: ${app.actor.name}`
     );
     const features = await getNodeFeatures(app.actor);
-    console.log(`Current features on actor:`, features);
+    logger.debug(`Current features on actor:`, features);
     const featureId = features[nodeIndex];
     if (!featureId) {
-      console.log(`No feature to remove from node ${nodeIndex}`);
+      logger.debug(`No feature to remove from node ${nodeIndex}`);
       return;
     }
 
@@ -261,7 +262,7 @@ function createNodeCallbacks(app) {
     const featuresTabItems = app.actor.items
       .filter((i) => i.type === "feat")
       .map((i) => ({ id: i.id, name: i.name }));
-    console.log(
+    logger.debug(
       `Features tab contents before removal for ${app.actor.type} sheet:`,
       featuresTabItems
     );
@@ -274,14 +275,14 @@ function createNodeCallbacks(app) {
       featureName = feature.name;
       try {
         await app.actor.deleteEmbeddedDocuments("Item", [featureId]);
-        console.log(
+        logger.debug(
           `Feature ${featureId} (Name: ${featureName}) successfully removed from ${app.actor.type} sheet by ID.`
         );
         ui.notifications.info(
           `Removed feature "${featureName}" from ${app.actor.type} sheet.`
         );
       } catch (error) {
-        console.error(
+        logger.error(
           `Failed to remove feature ${featureId} (Name: ${featureName}) from ${app.actor.type} sheet by ID:`,
           error
         );
@@ -290,7 +291,7 @@ function createNodeCallbacks(app) {
         );
       }
     } else {
-      console.log(
+      logger.debug(
         `Feature ${featureId} not found on ${app.actor.type} sheet by ID, attempting to find by name...`
       );
       // If the feature isn't found by ID, try to find it by name
@@ -307,14 +308,14 @@ function createNodeCallbacks(app) {
             await app.actor.deleteEmbeddedDocuments("Item", [
               matchingFeature.id,
             ]);
-            console.log(
+            logger.debug(
               `Feature ${matchingFeature.id} (Name: ${featureName}) successfully removed from ${app.actor.type} sheet by name.`
             );
             ui.notifications.info(
               `Removed feature "${featureName}" from ${app.actor.type} sheet.`
             );
           } catch (error) {
-            console.error(
+            logger.error(
               `Failed to remove feature ${matchingFeature.id} (Name: ${featureName}) from ${app.actor.type} sheet by name:`,
               error
             );
@@ -323,12 +324,12 @@ function createNodeCallbacks(app) {
             );
           }
         } else {
-          console.log(
+          logger.debug(
             `No feature with name ${featureName} found on ${app.actor.type} sheet.`
           );
         }
       } else {
-        console.log(
+        logger.debug(
           `Could not retrieve feature details for ID ${featureId} to match by name.`
         );
       }
@@ -336,13 +337,13 @@ function createNodeCallbacks(app) {
 
     // Clear the feature from the node
     await setNodeFeature(app.actor, nodeIndex, null);
-    console.log(`Feature cleared from node ${nodeIndex}`);
+    logger.debug(`Feature cleared from node ${nodeIndex}`);
 
     // Log the Features tab again to confirm removal
     const updatedFeaturesTabItems = app.actor.items
       .filter((i) => i.type === "feat")
       .map((i) => ({ id: i.id, name: i.name }));
-    console.log(
+    logger.debug(
       `Features tab contents after removal for ${app.actor.type} sheet:`,
       updatedFeaturesTabItems
     );
@@ -351,13 +352,13 @@ function createNodeCallbacks(app) {
   };
 
   const onStateToggle = async (nodeIndex, isAwakened) => {
-    console.log(
+    logger.debug(
       `🔄 Toggling state for node ${nodeIndex} to ${
         isAwakened ? "awakened" : "dormant"
       } on ${app.actor.type} sheet: ${app.actor.name}`
     );
     await setNodeState(app.actor, nodeIndex, isAwakened);
-    console.log(
+    logger.debug(
       `Node ${nodeIndex} state updated to ${
         isAwakened ? "awakened" : "dormant"
       }`
@@ -378,7 +379,7 @@ function setupColorPicker(colorPicker, app) {
   colorPicker.addEventListener("change", async (event) => {
     const newColor = event.target.value;
     await setThemeColor(app.actor, newColor);
-    console.log(
+    logger.debug(
       `Theme color updated to ${newColor} for ${app.actor.type} sheet: ${app.actor.name}`
     );
     await forceRender(app);
@@ -415,7 +416,7 @@ function setupUpdateButton(
       count > UI_CONFIG.nodeCount.max
     ) {
       input.style.borderColor = themeColor;
-      console.log(
+      logger.debug(
         `Invalid node count: ${count}. Must be between ${UI_CONFIG.nodeCount.min} and ${UI_CONFIG.nodeCount.max} for ${app.actor.type} sheet: ${app.actor.name}`
       );
       return;
@@ -455,7 +456,7 @@ function setupUpdateButton(
 
     button.disabled = false;
     button.innerHTML = UI_CONFIG.styles.button.defaultText;
-    console.log(
+    logger.debug(
       `Updated node count to ${count} for ${app.actor.type} sheet: ${app.actor.name}`
     );
   };
@@ -475,7 +476,7 @@ function setupTabHandlers(tabs, app) {
     .off("click.tabState")
     .on("click.tabState", async () => {
       await app.actor.setFlag(UI_CONFIG.moduleName, "activeTab", "elements");
-      console.log(
+      logger.debug(
         `Tab state set to 'elements' for ${app.actor.type} sheet: ${app.actor.name}`
       );
     });
@@ -486,7 +487,7 @@ function setupTabHandlers(tabs, app) {
     .on("click.tabState", async (event) => {
       const tab = $(event.currentTarget).attr("data-tab");
       await app.actor.setFlag(UI_CONFIG.moduleName, "activeTab", tab);
-      console.log(
+      logger.debug(
         `Tab state set to '${tab}' for ${app.actor.type} sheet: ${app.actor.name}`
       );
     });
@@ -502,7 +503,7 @@ function setupTabHandlers(tabs, app) {
 function applyThemeColor(mainCircle, nodeCountInput, themeColor) {
   mainCircle.style.setProperty("--theme-color", themeColor);
   nodeCountInput.style.borderColor = themeColor;
-  console.log(`Applied theme color: ${themeColor}`);
+  logger.debug(`Applied theme color: ${themeColor}`);
 }
 
 /**
@@ -539,7 +540,7 @@ export async function configureNodeUI(app, tabContent, tabs) {
     const nodeCorruptedStates = await getNodeCorruptionStates(app.actor);
     const themeColor = await getThemeColor(app.actor);
     const burnLevel = await getBurnLevel(app.actor);
-    console.log(
+    logger.debug(
       `Loaded node data for ${app.actor.type} sheet: ${app.actor.name} - Count: ${savedCount}, Values: ${nodeValues}, Features: ${nodeFeatures}, States: ${nodeStates}, Corrupted States: ${nodeCorruptedStates}, Theme Color: ${themeColor}, Burn Level: ${burnLevel}`
     );
 
@@ -547,7 +548,7 @@ export async function configureNodeUI(app, tabContent, tabs) {
     const hasAwakenedElement = nodeStates.some((state) => state === true);
     if (rulesInfo) {
       rulesInfo.style.display = hasAwakenedElement ? "block" : "none";
-      console.log(
+      logger.debug(
         `Rules info bubble ${
           hasAwakenedElement ? "shown" : "hidden"
         } - Has awakened element: ${hasAwakenedElement} for ${
@@ -594,11 +595,11 @@ export async function configureNodeUI(app, tabContent, tabs) {
     setupBurnLevelInput(burnLevelInput, app);
     setupColorPicker(colorPicker, app);
     setupTabHandlers(tabs, app);
-    console.log(
+    logger.debug(
       `Node UI configured successfully for ${app.actor.type} sheet: ${app.actor.name}`
     );
   } catch (error) {
-    console.error(
+    logger.error(
       `Failed to configure node UI for ${app.actor.type} sheet: ${app.actor.name}:`,
       error
     );

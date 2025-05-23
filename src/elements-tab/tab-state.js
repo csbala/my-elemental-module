@@ -1,3 +1,5 @@
+import { logger } from "../logger.js";
+
 /**
  * Restores the active tab state in the character sheet.
  *
@@ -24,7 +26,7 @@ export async function restoreTabState(app, html, tabs, tabBody) {
 
   // Only use the stored tab if the default tab is "elements" and the stored tab matches (indicating a user preference)
   if (finalActiveTab !== "elements" || storedActiveTab !== "elements") {
-    console.log(
+    logger.debug(
       `Restoring active tab: ${finalActiveTab} (Default: ${defaultTab}, Current: ${currentActiveTab}, Stored: ${storedActiveTab}, App: ${app._activeTab})`
     );
     tabs.find("a").removeClass("active");
@@ -35,7 +37,7 @@ export async function restoreTabState(app, html, tabs, tabBody) {
     // Update the stored tab state to reflect the current tab
     await app.actor.setFlag("my-elemental-module", "activeTab", finalActiveTab);
   } else {
-    console.log(
+    logger.debug(
       `Restoring stored active tab: ${storedActiveTab} (Default: ${defaultTab}, Current: ${currentActiveTab}, App: ${app._activeTab})`
     );
     tabs.find("a").removeClass("active");
