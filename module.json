@@ -2,7 +2,7 @@
   "id": "my-elemental-module",
   "title": "Elemental Attribute System",
   "description": "Adds a custom Elements tab to D&D 5e character sheets for narrative powers.",
-  "version": "1.4.0",
+  "version": "1.0.0",
   "authors": [
     {
       "name": "Cservenák Balázs"
